@@ -11,4 +11,4 @@ https://raw.githubusercontent.com/Melhorias-PJe/scripts_teste/refs/heads/main/e-
 https://github.com/Melhorias-PJe/scripts_teste/raw/refs/heads/main/painel_adm.user.js
 
 # Consultar ID Dentro dos autos
-https://github.com/Melhorias-PJe/scripts_teste/blob/main/consultar_id_cc_pje%2Br.user.js
+https://github.com/Melhorias-PJe/scripts_teste/raw/refs/heads/main/consultar_id_cc_pje+r.user.js
