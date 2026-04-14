@@ -12,3 +12,6 @@ https://github.com/Melhorias-PJe/scripts_teste/raw/refs/heads/main/painel_adm.us
 
 # Consultar ID Dentro dos autos
 https://github.com/Melhorias-PJe/scripts_teste/raw/refs/heads/main/consultar_id_cc_pje+r.user.js
+
+# Emitir ofícios de consulta de Endereço
+https://github.com/Melhorias-PJe/scripts_teste/raw/refs/heads/main/oficios_de_endereco.user.js
