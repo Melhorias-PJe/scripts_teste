@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         PJe TJCE – Emissão de Ofícios de Endereço (Teste)
+// @name         PJe TJCE – Emissão de Ofícios de Endereço (Final)
 // @namespace    local.tjce.pje.oficios.endereco
-// @version      0.4.0
-// @description  Emissão de ofícios de endereço em nova janela, com favoritos, lista completa, destinatário manual e numeração customizada.
+// @version      1.0.0
+// @description  Emissão de ofícios de endereço em nova janela com lista única de destinatários, captura do polo passivo e geração por destinatário.
 // @author       Nigério Bezerra
 // @match        https://pje.tjce.jus.br/*
 // @match        https://pje-treinamento-release.tjce.jus.br/*
@@ -19,78 +19,49 @@
     key: "e",
   };
 
-  const FAVORITOS = [
-    { nome: "ENEL", email: "resposta.cliente@enel.com", endereco: "" },
-    { nome: "CAGECE", email: "ouvidoria.geral@cge.ce.gov.br", endereco: "" },
-    { nome: "Banco do Brasil", email: "cenopserv.oficioscwb@bb.com.br", endereco: "" },
-    { nome: "Caixa Econômica Federal - Agência Fórum Clóvis Beviláqua", email: "ag4030@caixa.gov.br", endereco: "" },
-    { nome: "Banco Bradesco", email: "oficiosjudiciais@bradesco.com.br", endereco: "" },
-    { nome: "Banco Itaú", email: "itaujudicial@itau-unibanco.com.br", endereco: "" },
-    { nome: "Banco Santander", email: "gerenciaoficios@santander.com.br", endereco: "" },
-    { nome: "Claro Telefonia", email: "oficios.doc@claro.com.br", endereco: "" },
-    { nome: "Tim Operadora", email: "graop_oficios@timbrasil.com.br", endereco: "" },
-    { nome: "Vivo Operadora", email: "ordens.sigilo.br@telefonica.com", endereco: "" },
-    { nome: "Oi (antiga Telemar)", email: "qsoi@oi.net.br", endereco: "" },
-    { nome: "UBER DO BRASIL TECNOLOGIA LTDA.", email: "correspondencias@uber.com", endereco: "" },
-    { nome: "99pop", email: "juridico@99app.com", endereco: "" },
-    { nome: "Mercado Livre", email: "oficios@mercadolivre.com", endereco: "" },
-    { nome: "DETRAN-CE", email: "judicial@detran.ce.gov.br", endereco: "" },
-    { nome: "Junta Comercial do Estado do Ceará - JUCEC", email: "protocolo@jucec.ce.gov.br", endereco: "" },
-    { nome: "Receita Federal", email: "expedientesrfb.rf03@rfb.gov.br", endereco: "" },
+  const DESTINATARIOS = [
+    { nome: "ENEL", email: "resposta.cliente@enel.com", endereco: "", maloteDigital: false },
+    { nome: "CAGECE", email: "ouvidoria.geral@cge.ce.gov.br", endereco: "", maloteDigital: false },
+    { nome: "Banco do Brasil", email: "cenopserv.oficioscwb@bb.com.br", endereco: "", maloteDigital: false },
+    { nome: "Caixa Econômica Federal - Agência Fórum Clóvis Beviláqua", email: "ag4030@caixa.gov.br", endereco: "", maloteDigital: false },
+    { nome: "Banco Bradesco", email: "oficiosjudiciais@bradesco.com.br", endereco: "", maloteDigital: false },
+    { nome: "Banco do Nordeste SA", email: "ouvidoria@bnb.gov.br", endereco: "", maloteDigital: false },
+    { nome: "Banco Itaú", email: "itaujudicial@itau-unibanco.com.br", endereco: "", maloteDigital: false },
+    { nome: "Banco Santander", email: "gerenciaoficios@santander.com.br", endereco: "", maloteDigital: false },
+    { nome: "Banco C6", email: "oficiosbacen@c6bank.com.br", endereco: "", maloteDigital: false },
+    { nome: "Banco Safra S/A", email: "stvm-corretora@safra.com.br", endereco: "", maloteDigital: false },
+    { nome: "BV Financeira S/A", email: "intimacoesoficiais@bv.com.br", endereco: "", maloteDigital: false },
+    { nome: "Claro Telefonia", email: "oficios.doc@claro.com.br", endereco: "", maloteDigital: false },
+    { nome: "Tim Operadora", email: "graop_oficios@timbrasil.com.br", endereco: "", maloteDigital: false },
+    { nome: "Vivo Operadora", email: "ordens.sigilo.br@telefonica.com", endereco: "", maloteDigital: false },
+    { nome: "Oi (antiga Telemar)", email: "qsoi@oi.net.br", endereco: "", maloteDigital: false },
+    { nome: "UBER DO BRASIL TECNOLOGIA LTDA.", email: "correspondencias@uber.com", endereco: "", maloteDigital: false },
+    { nome: "99pop", email: "juridico@99app.com", endereco: "", maloteDigital: false },
+    { nome: "RAPPI", email: "litigation.br@rappi.com", endereco: "", maloteDigital: false },
+    { nome: "Mercado Livre", email: "oficios@mercadolivre.com", endereco: "", maloteDigital: false },
+    { nome: "DETRAN-CE", email: "judicial@detran.ce.gov.br", endereco: "", maloteDigital: false },
+    { nome: "Junta Comercial do Estado do Ceará - JUCEC", email: "protocolo@jucec.ce.gov.br", endereco: "", maloteDigital: false },
+    { nome: "Receita Federal", email: "expedientesrfb.rf03@rfb.gov.br", endereco: "", maloteDigital: false },
+    { nome: "Instituto Nacional de Seguridade Social - INSS", email: "gexfor@inss.gov.br", endereco: "", maloteDigital: false },
+    { nome: "Secretaria da Segurança Pública e Defesa Social do Estado do Ceará - SSPDS", email: "secretaria@sspds.ce.gov.br", endereco: "", maloteDigital: false },
+    { nome: "Polícia Rodoviária Federal", email: "protocolo.ce@prf.gov.br", endereco: "", maloteDigital: false },
+    { nome: "Superintendência da Polícia Rodoviária Federal no Ceará", email: "protocolo.ce@prf.gov.br", endereco: "", maloteDigital: false },
+    { nome: "Superintendência Regional da Polícia Federal no Ceará", email: "gab.srce@pf.gov.br", endereco: "", maloteDigital: false },
+    { nome: "Secretaria de Saúde do Estado do Ceará", email: "protocologeral.sesa@saude.ce.gov.br", endereco: "", maloteDigital: false },
+    { nome: "Secretaria Municipal de Saúde de Fortaleza", email: "cojur@sms.fortaleza.ce.gov.br", endereco: "", maloteDigital: false },
+    { nome: "SEFAZ", email: "asjur@sefaz.ce.gov.br", endereco: "", maloteDigital: false },
+    { nome: "Procuradoria Geral do Estado do Ceará - PGE-CE", email: "pge@pge.ce.gov.br", endereco: "", maloteDigital: false },
+    { nome: "Procuradoria Geral do Estado do Ceará - PGE-CE (somente inscrição em dívida ativa)", email: "prodat@pge.ce.gov.br", endereco: "", maloteDigital: false },
+    { nome: "Ordem dos Advogados do Brasil - Seccional Ceará (OAB/CE)", email: "presidencia@oabce.org.br", endereco: "", maloteDigital: false },
+    { nome: "AMAZON", email: "", endereco: "Av. Juscelino Kubitschek, 2041, Torre E, 18° andar - São Paulo CEP: 04543-011", maloteDigital: false },
+    { nome: "Capitania dos Portos do Ceará", email: "", endereco: "Av. Vicente de Castro, 4917 - Mucuripe, Fortaleza - CE, 60180-410", maloteDigital: false },
+    { nome: "CAGED - Cadastro Geral de Empregados e Desempregados", email: "", endereco: "Esplanada dos Ministérios, Bloco F Ed. Anexo, Ala B, sala 211 Brasília - DF - CEP: 70056-900", maloteDigital: false },
+
+    { nome: "IFOOD", email: "", endereco: "", maloteDigital: true },
+    { nome: "WAZE", email: "", endereco: "", maloteDigital: true },
+    { nome: "GOOGLE", email: "", endereco: "", maloteDigital: true },
+    { nome: "GOOGLE MAPS", email: "", endereco: "", maloteDigital: true },
   ];
-
-  const LISTA_COMPLETA = [
-  { nome: "ENEL", email: "resposta.cliente@enel.com", endereco: "" },
-  { nome: "CAGECE", email: "ouvidoria.geral@cge.ce.gov.br", endereco: "" },
-  { nome: "Banco do Brasil", email: "cenopserv.oficioscwb@bb.com.br", endereco: "" },
-  { nome: "Caixa Econômica Federal - Agência Fórum Clóvis Beviláqua", email: "ag4030@caixa.gov.br", endereco: "" },
-  { nome: "Banco Bradesco", email: "oficiosjudiciais@bradesco.com.br", endereco: "" },
-  { nome: "Banco do Nordeste SA", email: "ouvidoria@bnb.gov.br", endereco: "" },
-  { nome: "Banco Itaú", email: "itaujudicial@itau-unibanco.com.br", endereco: "" },
-  { nome: "Banco Santander", email: "gerenciaoficios@santander.com.br", endereco: "" },
-  { nome: "Banco C6", email: "oficiosbacen@c6bank.com.br", endereco: "" },
-  { nome: "Banco Safra S/A", email: "stvm-corretora@safra.com.br", endereco: "" },
-  { nome: "BV Financeira S/A", email: "intimacoesoficiais@bv.com.br", endereco: "" },
-  { nome: "Claro Telefonia", email: "oficios.doc@claro.com.br", endereco: "" },
-  { nome: "Tim Operadora", email: "graop_oficios@timbrasil.com.br", endereco: "" },
-  { nome: "Vivo Operadora", email: "ordens.sigilo.br@telefonica.com", endereco: "" },
-  { nome: "Oi (antiga Telemar)", email: "qsoi@oi.net.br", endereco: "" },
-  { nome: "UBER DO BRASIL TECNOLOGIA LTDA.", email: "correspondencias@uber.com", endereco: "" },
-  { nome: "99pop", email: "juridico@99app.com", endereco: "" },
-  { nome: "RAPPI", email: "litigation.br@rappi.com", endereco: "" },
-  { nome: "Mercado Livre", email: "oficios@mercadolivre.com", endereco: "" },
-  { nome: "DETRAN-CE", email: "judicial@detran.ce.gov.br", endereco: "" },
-  { nome: "Junta Comercial do Estado do Ceará - JUCEC", email: "protocolo@jucec.ce.gov.br", endereco: "" },
-  { nome: "Receita Federal", email: "expedientesrfb.rf03@rfb.gov.br", endereco: "" },
-  { nome: "Instituto Nacional de Seguridade Social - INSS", email: "gexfor@inss.gov.br", endereco: "" },
-  { nome: "Secretaria da Segurança Pública e Defesa Social do Estado do Ceará - SSPDS", email: "secretaria@sspds.ce.gov.br", endereco: "" },
-  { nome: "Polícia Rodoviária Federal", email: "protocolo.ce@prf.gov.br", endereco: "" },
-  { nome: "Superintendência da Polícia Rodoviária Federal no Ceará", email: "protocolo.ce@prf.gov.br", endereco: "" },
-  { nome: "Superintendência Regional da Polícia Federal no Ceará", email: "gab.srce@pf.gov.br", endereco: "" },
-  { nome: "Secretaria de Saúde do Estado do Ceará", email: "protocologeral.sesa@saude.ce.gov.br", endereco: "" },
-  { nome: "Secretaria Municipal de Saúde de Fortaleza", email: "cojur@sms.fortaleza.ce.gov.br", endereco: "" },
-  { nome: "SEFAZ", email: "asjur@sefaz.ce.gov.br", endereco: "" },
-  { nome: "Procuradoria Geral do Estado do Ceará - PGE-CE", email: "pge@pge.ce.gov.br", endereco: "" },
-  { nome: "Procuradoria Geral do Estado do Ceará - PGE-CE (somente inscrição em dívida ativa)", email: "prodat@pge.ce.gov.br", endereco: "" },
-  { nome: "Ordem dos Advogados do Brasil - Seccional Ceará (OAB/CE)", email: "presidencia@oabce.org.br", endereco: "" },
-
-  // Endereços físicos constam expressamente no PDF
-  { 
-    nome: "AMAZON", 
-    email: "", 
-    endereco: "Av. Juscelino Kubitschek, 2041, Torre E, 18º andar - São Paulo/SP - CEP: 04543-011" 
-  },
-  { 
-    nome: "Capitania dos Portos do Ceará", 
-    email: "", 
-    endereco: "Av. Vicente de Castro, 4917 - Mucuripe, Fortaleza/CE - CEP: 60180-410" 
-  },
-  { 
-    nome: "CAGED - Cadastro Geral de Empregados e Desempregados", 
-    email: "", 
-    endereco: "Esplanada dos Ministérios, Bloco F, Ed. Anexo, Ala B, Sala 211 - Brasília/DF - CEP: 70056-900" 
-  },
-];
 
   let popupRef = null;
 
@@ -117,8 +88,7 @@
         popupRef.focus();
         popupRef.renderOficiosApp({
           requeridos,
-          favoritos: FAVORITOS,
-          destinatarios: LISTA_COMPLETA,
+          destinatarios: DESTINATARIOS,
           processo,
           hoje,
         });
@@ -138,8 +108,7 @@
 
     const payload = {
       requeridos,
-      favoritos: FAVORITOS,
-      destinatarios: LISTA_COMPLETA,
+      destinatarios: DESTINATARIOS,
       processo,
       hoje,
     };
@@ -177,7 +146,6 @@
       --green-dark: #166c30;
       --red: #c62828;
       --shadow: 0 10px 30px rgba(0,0,0,.08);
-      --amber: #ff8b22;
     }
 
     * { box-sizing: border-box; }
@@ -269,7 +237,7 @@
     }
 
     .scroll-box {
-      max-height: 210px;
+      max-height: 240px;
       overflow: auto;
       border: 1px solid var(--line);
       border-radius: 10px;
@@ -465,6 +433,14 @@
       display: none;
     }
 
+    .inline-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
     @media (max-width: 1050px) {
       .layout {
         grid-template-columns: 1fr;
@@ -506,17 +482,11 @@
           </div>
 
           <div class="field">
-            <div class="section-title">⭐ Destinatários mais usados</div>
-            <div id="favoritosBox" class="scroll-box"></div>
+            <label for="destSearch">Destinatários</label>
+            <input id="destSearch" type="text" placeholder="Pesquisar destinatário..." />
           </div>
 
           <div class="field">
-            <label for="destSearch">Pesquisar na lista completa</label>
-            <input id="destSearch" type="text" placeholder="Ex.: Enel, Banco, Uber, Delegacia..." />
-          </div>
-
-          <div class="field">
-            <div class="section-title">📚 Lista completa</div>
             <div id="destinatariosBox" class="scroll-box"></div>
           </div>
 
@@ -535,7 +505,13 @@
                 <label for="manualDestEndereco">Endereço físico</label>
                 <input id="manualDestEndereco" type="text" placeholder="Usado quando não houver e-mail" />
               </div>
-              <button id="addManualDest" class="btn btn-light" type="button">Adicionar destinatário</button>
+              <label class="inline-checkbox">
+                <input id="manualDestMalote" type="checkbox" />
+                <span>Malote Digital</span>
+              </label>
+              <div class="actions">
+                <button id="addManualDest" class="btn btn-light" type="button">Adicionar destinatário</button>
+              </div>
             </div>
           </div>
 
@@ -569,8 +545,7 @@
 
       let state = {
         requeridos: [],
-        favoritos: [],
-        destinatarios: [],
+        destinatariosBase: [],
         destinatariosManuais: [],
         processo: "",
         hoje: "",
@@ -599,7 +574,40 @@
       }
 
       function makeDestKey(dest) {
-        return [normalizeUpper(dest.nome), normalizeUpper(dest.email || ""), normalizeUpper(dest.endereco || "")].join("|");
+        return [
+          normalizeUpper(dest.nome),
+          normalizeUpper(dest.email || ""),
+          normalizeUpper(dest.endereco || ""),
+          String(!!dest.maloteDigital)
+        ].join("|");
+      }
+
+      function dedupeDestinatarios(list) {
+        const seen = new Set();
+        const out = [];
+
+        for (const item of list) {
+          if (!item || !norm(item.nome)) continue;
+          const clean = {
+            nome: norm(item.nome),
+            email: norm(item.email || ""),
+            endereco: norm(item.endereco || ""),
+            maloteDigital: !!item.maloteDigital,
+          };
+          const key = makeDestKey(clean);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          out.push(clean);
+        }
+
+        return out;
+      }
+
+      function getAllDestinatarios() {
+        return dedupeDestinatarios([
+          ...state.destinatariosBase,
+          ...state.destinatariosManuais,
+        ]);
       }
 
       function dedupeRequeridos(list) {
@@ -668,35 +676,18 @@
         });
       }
 
-      function renderFavoritos() {
-        const box = document.getElementById("favoritosBox");
-        box.innerHTML = "";
-
-        if (!state.favoritos.length) {
-          box.innerHTML = '<div class="item">Nenhum favorito cadastrado.</div>';
-          return;
-        }
-
-        state.favoritos.forEach((dest, index) => {
-          const desc = dest.email ? dest.email : (dest.endereco || "Sem e-mail e sem endereço");
-          const key = makeDestKey(dest);
-
-          const row = document.createElement("label");
-          row.className = "item";
-          row.innerHTML =
-            '<input type="checkbox" class="dest-check dest-fav-check" data-key="' + escapeHtml(key) + '" data-source="fav" data-nome="' + escapeHtml(dest.nome) + '" data-email="' + escapeHtml(dest.email || "") + '" data-endereco="' + escapeHtml(dest.endereco || "") + '">' +
-            ' <strong>' + escapeHtml(dest.nome) + '</strong><br><span style="color:#5f6b7a;font-size:12px;">' + escapeHtml(desc) + '</span>';
-          box.appendChild(row);
-        });
-      }
-
       function renderDestinatarios(filter = "") {
         const box = document.getElementById("destinatariosBox");
         box.innerHTML = "";
 
         const query = norm(filter).toLowerCase();
-        const itens = state.destinatarios.filter((d) => {
-          const hay = (d.nome + " " + (d.email || "") + " " + (d.endereco || "")).toLowerCase();
+        const itens = getAllDestinatarios().filter((d) => {
+          const hay = [
+            d.nome,
+            d.email || "",
+            d.endereco || "",
+            d.maloteDigital ? "malote digital" : ""
+          ].join(" ").toLowerCase();
           return !query || hay.includes(query);
         });
 
@@ -706,13 +697,15 @@
         }
 
         itens.forEach((dest) => {
-          const desc = dest.email ? dest.email : (dest.endereco || "Sem e-mail e sem endereço");
+          const desc = dest.email
+            ? dest.email
+            : (dest.maloteDigital ? "Malote Digital" : (dest.endereco || "Sem e-mail e sem endereço"));
           const key = makeDestKey(dest);
 
           const row = document.createElement("label");
           row.className = "item";
           row.innerHTML =
-            '<input type="checkbox" class="dest-check dest-list-check" data-key="' + escapeHtml(key) + '" data-source="list" data-nome="' + escapeHtml(dest.nome) + '" data-email="' + escapeHtml(dest.email || "") + '" data-endereco="' + escapeHtml(dest.endereco || "") + '">' +
+            '<input type="checkbox" class="dest-check" data-key="' + escapeHtml(key) + '" data-nome="' + escapeHtml(dest.nome) + '" data-email="' + escapeHtml(dest.email || "") + '" data-endereco="' + escapeHtml(dest.endereco || "") + '" data-malote="' + String(!!dest.maloteDigital) + '">' +
             ' <strong>' + escapeHtml(dest.nome) + '</strong><br><span style="color:#5f6b7a;font-size:12px;">' + escapeHtml(desc) + '</span>';
           box.appendChild(row);
         });
@@ -739,22 +732,23 @@
         const nome = norm(document.getElementById("manualDestNome").value);
         const email = norm(document.getElementById("manualDestEmail").value);
         const endereco = norm(document.getElementById("manualDestEndereco").value);
+        const maloteDigital = !!document.getElementById("manualDestMalote").checked;
 
         if (!nome) {
           showWarning("Informe o nome do destinatário manual.");
           return;
         }
 
-        if (!email && !endereco) {
-          showWarning("Informe e-mail ou endereço físico para o destinatário manual.");
+        if (!email && !endereco && !maloteDigital) {
+          showWarning("Informe e-mail, endereço ou marque Malote Digital para o destinatário manual.");
           return;
         }
 
-        const novo = { nome, email, endereco };
+        const novo = { nome, email, endereco, maloteDigital };
         const key = makeDestKey(novo);
 
-        const jaExiste = [...state.favoritos, ...state.destinatarios, ...state.destinatariosManuais]
-          .some((d) => makeDestKey(d) === key);
+        const todos = getAllDestinatarios();
+        const jaExiste = todos.some((d) => makeDestKey(d) === key);
 
         if (!jaExiste) {
           state.destinatariosManuais.push(novo);
@@ -763,6 +757,7 @@
         document.getElementById("manualDestNome").value = "";
         document.getElementById("manualDestEmail").value = "";
         document.getElementById("manualDestEndereco").value = "";
+        document.getElementById("manualDestMalote").checked = false;
 
         renderDestinatarios(document.getElementById("destSearch").value);
         autoCheckDestinationByKey(key);
@@ -788,6 +783,7 @@
             nome: norm(el.dataset.nome),
             email: norm(el.dataset.email),
             endereco: norm(el.dataset.endereco),
+            maloteDigital: String(el.dataset.malote) === "true",
           };
           const key = makeDestKey(dest);
           if (seen.has(key)) return;
@@ -801,7 +797,7 @@
       function updateSummary() {
         const reqs = getSelectedRequeridos();
         const dests = getSelectedDestinatarios();
-        const total = reqs.length * dests.length;
+        const total = dests.length;
 
         let msg = "";
         msg += "Processo: " + (state.processo || "não identificado") + ". ";
@@ -825,21 +821,27 @@
         return numero + "/2026/SEJUDPG/CVESP/" + sigla;
       }
 
-      function buildOficioTexto(numero, requerido, destinatario) {
+      function buildPartesBloco(requeridos) {
+        return requeridos.map((req) => buildParteLinha(req)).join("\\n");
+      }
+
+      function buildCanalDestino(destinatario) {
+        if (destinatario.email) return "E-mail: " + destinatario.email;
+        if (destinatario.maloteDigital) return "Malote Digital";
+        return "Endereço: " + (destinatario.endereco || "[ENDEREÇO NÃO INFORMADO]");
+      }
+
+      function buildOficioTexto(numero, requeridos, destinatario) {
         const numeroCompleto = buildNumeroOficio(numero);
-
-        const headerDestino = destinatario.email
-          ? "Ao(À) " + destinatario.nome + "\\nE-mail: " + destinatario.email
-          : "Ao(À) " + destinatario.nome + "\\nEndereço: " + (destinatario.endereco || "[ENDEREÇO NÃO INFORMADO]");
-
-        const parteLinha = buildParteLinha(requerido);
+        const partesBloco = buildPartesBloco(requeridos);
 
         return [
           "Ofício nº " + numeroCompleto,
           "",
           formatDateLine(),
           "",
-          headerDestino,
+          "Ao(À) " + destinatario.nome,
+          buildCanalDestino(destinatario),
           "",
           "Assunto: Solicitação de Endereço",
           "",
@@ -847,7 +849,7 @@
           "",
           "Na qualidade de Juiz de Direito desta Unidade Judiciária, solicito a Vossa Senhoria que informe, no prazo mais breve possível, os dados cadastrais atualizados, especialmente endereço(s), telefone(s) e demais informações disponíveis, relativos a:",
           "",
-          parteLinha,
+          partesBloco,
           "",
           "A presente solicitação tem por finalidade possibilitar a localização da parte nos autos do processo nº " + (state.processo || "[NÚMERO DO PROCESSO]") + ".",
           "",
@@ -930,59 +932,57 @@
         let contador = numeroInicial;
         let total = 0;
 
-        for (const dest of destinatarios) {
-          for (const req of requeridos) {
-            const numeroCompleto = buildNumeroOficio(contador);
-            const texto = buildOficioTexto(contador, req, dest);
+        destinatarios.forEach((dest) => {
+          const numeroCompleto = buildNumeroOficio(contador);
+          const texto = buildOficioTexto(contador, requeridos, dest);
 
-            const card = document.createElement("div");
-            card.className = "oficio-card";
+          const card = document.createElement("div");
+          card.className = "oficio-card";
 
-            const toolbar = document.createElement("div");
-            toolbar.className = "oficio-toolbar";
+          const toolbar = document.createElement("div");
+          toolbar.className = "oficio-toolbar";
 
-            const titleWrap = document.createElement("div");
-            titleWrap.innerHTML =
-              '<div class="oficio-title">Ofício nº ' + escapeHtml(numeroCompleto) + '</div>' +
-              '<div class="oficio-meta">' + escapeHtml(dest.nome) + ' • ' + escapeHtml(formatRequeridoLabel(req)) + '</div>';
+          const titleWrap = document.createElement("div");
+          titleWrap.innerHTML =
+            '<div class="oficio-title">Ofício nº ' + escapeHtml(numeroCompleto) + '</div>' +
+            '<div class="oficio-meta">' + escapeHtml(dest.nome) + ' • ' + requeridos.length + ' parte(s) selecionada(s)</div>';
 
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "btn btn-primary";
-            btn.textContent = "Copiar";
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "btn btn-primary";
+          btn.textContent = "Copiar";
 
-            btn.addEventListener("click", async () => {
-              const ok = await copyText(texto);
-              if (ok) {
-                btn.textContent = "Copiado";
-                btn.classList.remove("btn-primary");
-                btn.classList.add("btn-success");
-              } else {
-                btn.textContent = "Falhou";
-                btn.classList.remove("btn-primary");
-                btn.classList.add("btn-danger");
-              }
-            });
+          btn.addEventListener("click", async () => {
+            const ok = await copyText(texto);
+            if (ok) {
+              btn.textContent = "Copiado";
+              btn.classList.remove("btn-primary");
+              btn.classList.add("btn-success");
+            } else {
+              btn.textContent = "Falhou";
+              btn.classList.remove("btn-primary");
+              btn.classList.add("btn-danger");
+            }
+          });
 
-            toolbar.appendChild(titleWrap);
-            toolbar.appendChild(btn);
+          toolbar.appendChild(titleWrap);
+          toolbar.appendChild(btn);
 
-            const body = document.createElement("div");
-            body.className = "oficio-body";
+          const body = document.createElement("div");
+          body.className = "oficio-body";
 
-            const pre = document.createElement("pre");
-            pre.className = "oficio-pre";
-            pre.textContent = texto;
+          const pre = document.createElement("pre");
+          pre.className = "oficio-pre";
+          pre.textContent = texto;
 
-            body.appendChild(pre);
-            card.appendChild(toolbar);
-            card.appendChild(body);
-            resultado.appendChild(card);
+          body.appendChild(pre);
+          card.appendChild(toolbar);
+          card.appendChild(body);
+          resultado.appendChild(card);
 
-            contador++;
-            total++;
-          }
-        }
+          contador++;
+          total++;
+        });
 
         info.textContent = total + " ofício(s) gerado(s).";
       }
@@ -994,9 +994,7 @@
         );
 
         boxes.forEach((el) => {
-          if (selectedKeys.has(el.dataset.key)) {
-            el.checked = true;
-          }
+          if (selectedKeys.has(el.dataset.key)) el.checked = true;
         });
       }
 
@@ -1071,41 +1069,16 @@
         });
       }
 
-      function dedupeDestinatarios(list) {
-        const seen = new Set();
-        const out = [];
-
-        for (const item of list) {
-          if (!item || !norm(item.nome)) continue;
-          const clean = {
-            nome: norm(item.nome),
-            email: norm(item.email || ""),
-            endereco: norm(item.endereco || ""),
-          };
-          const key = makeDestKey(clean);
-          if (seen.has(key)) continue;
-          seen.add(key);
-          out.push(clean);
-        }
-
-        return out;
-      }
-
       window.renderOficiosApp = function renderOficiosApp(payload) {
         state = {
           requeridos: Array.isArray(payload?.requeridos) ? payload.requeridos : [],
-          favoritos: dedupeDestinatarios(Array.isArray(payload?.favoritos) ? payload.favoritos : []),
-          destinatarios: dedupeDestinatarios([
-            ...(Array.isArray(payload?.destinatarios) ? payload.destinatarios : []),
-            ...state.destinatariosManuais,
-          ]),
+          destinatariosBase: dedupeDestinatarios(Array.isArray(payload?.destinatarios) ? payload.destinatarios : []),
           destinatariosManuais: state.destinatariosManuais || [],
           processo: payload?.processo || "",
           hoje: payload?.hoje || "",
         };
 
         renderRequeridos();
-        renderFavoritos();
         renderDestinatarios(document.getElementById("destSearch")?.value || "");
         bindEvents();
         updateSummary();
@@ -1118,7 +1091,7 @@
 
   function extractNumeroProcesso() {
     const bodyText = document.body?.innerText || "";
-    const match = bodyText.match(/\b\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}\b/);
+    const match = bodyText.match(/\\b\\d{7}-\\d{2}\\.\\d{4}\\.\\d\\.\\d{2}\\.\\d{4}\\b/);
     return match ? match[0] : "";
   }
 
@@ -1152,15 +1125,15 @@
     clone.querySelectorAll("i, svg, button").forEach((el) => el.remove());
 
     return String(clone.textContent || "")
-      .replace(/\s+/g, " ")
+      .replace(/\\s+/g, " ")
       .trim();
   }
 
   function parseParteText(text) {
-    const clean = String(text || "").replace(/\s+/g, " ").trim();
+    const clean = String(text || "").replace(/\\s+/g, " ").trim();
     if (!clean) return null;
 
-    const fullMatch = clean.match(/^(.*?)\s*-\s*(CPF|CNPJ):\s*([\d./-]+)\s*\((.*?)\)\s*$/i);
+    const fullMatch = clean.match(/^(.*?)\\s*-\\s*(CPF|CNPJ):\\s*([\\d./-]+)\\s*\\((.*?)\\)\\s*$/i);
     if (fullMatch) {
       return {
         nome: fullMatch[1].trim(),
@@ -1170,7 +1143,7 @@
       };
     }
 
-    const docNoQual = clean.match(/^(.*?)\s*-\s*(CPF|CNPJ):\s*([\d./-]+)\s*$/i);
+    const docNoQual = clean.match(/^(.*?)\\s*-\\s*(CPF|CNPJ):\\s*([\\d./-]+)\\s*$/i);
     if (docNoQual) {
       return {
         nome: docNoQual[1].trim(),
@@ -1180,7 +1153,7 @@
       };
     }
 
-    const qualNoDoc = clean.match(/^(.*?)\s*\((.*?)\)\s*$/i);
+    const qualNoDoc = clean.match(/^(.*?)\\s*\\((.*?)\\)\\s*$/i);
     if (qualNoDoc) {
       return {
         nome: qualNoDoc[1].trim(),
@@ -1207,7 +1180,7 @@
       const key = [
         normalizeUpper(item.nome),
         normalizeUpper(item.documentoTipo || ""),
-        String(item.documentoNumero || "").replace(/\D/g, ""),
+        String(item.documentoNumero || "").replace(/\\D/g, ""),
         normalizeUpper(item.qualificacao || "")
       ].join("|");
 
@@ -1222,7 +1195,7 @@
   function extractFallbackFromText() {
     const text = document.body?.innerText || "";
     const lines = text
-      .split(/\r?\n/)
+      .split(/\\r?\\n/)
       .map((line) => line.trim())
       .filter(Boolean);
 
@@ -1268,9 +1241,9 @@
 
   function splitNames(value) {
     return String(value || "")
-      .split(/\s{2,}|;|,(?=\s*[A-ZÁÉÍÓÚÂÊÔÃÕÇ])/)
+      .split(/\\s{2,}|;|,(?=\\s*[A-ZÁÉÍÓÚÂÊÔÃÕÇ])/)
       .map((part) => part.trim())
-      .filter((part) => part && part.length >= 3 && !/^\[.*\]$/.test(part));
+      .filter((part) => part && part.length >= 3 && !/^\\[.*\\]$/.test(part));
   }
 
   function looksLikeStructuralLine(value) {
@@ -1295,8 +1268,8 @@
   function normalizeUpper(value) {
     return String(value || "")
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, " ")
+      .replace(/[\\u0300-\\u036f]/g, "")
+      .replace(/\\s+/g, " ")
       .trim()
       .toUpperCase();
   }
