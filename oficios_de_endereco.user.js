@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         PJe TJCE – Emissão de Ofícios de Endereço (Teste)
 // @namespace    local.tjce.pje.oficios.endereco
-// @version      0.3.0
-// @description  Abre nova janela para emissão de ofícios de endereço com captura de polo passivo, numeração sequencial e cópia individual.
+// @version      0.4.0
+// @description  Emissão de ofícios de endereço em nova janela, com favoritos, lista completa, destinatário manual e numeração customizada.
 // @author       Nigério Bezerra
 // @match        https://pje.tjce.jus.br/*
 // @match        https://pje-treinamento-release.tjce.jus.br/*
@@ -19,20 +19,78 @@
     key: "e",
   };
 
-  const DESTINATARIOS = [
+  const FAVORITOS = [
     { nome: "ENEL", email: "resposta.cliente@enel.com", endereco: "" },
-    { nome: "Banco do Brasil", email: "cenopserv.oficioscwb@bb.com.br", endereco: "" },
     { nome: "CAGECE", email: "ouvidoria.geral@cge.ce.gov.br", endereco: "" },
-    { nome: "Uber do Brasil Tecnologia Ltda.", email: "correspondencias@uber.com", endereco: "" },
-    { nome: "99Pop", email: "juridico@99app.com", endereco: "" },
-    { nome: "Mercado Livre", email: "oficios@mercadolivre.com", endereco: "" },
-    { nome: "TIM Operadora", email: "graop_oficios@timbrasil.com.br", endereco: "" },
+    { nome: "Banco do Brasil", email: "cenopserv.oficioscwb@bb.com.br", endereco: "" },
+    { nome: "Caixa Econômica Federal - Agência Fórum Clóvis Beviláqua", email: "ag4030@caixa.gov.br", endereco: "" },
+    { nome: "Banco Bradesco", email: "oficiosjudiciais@bradesco.com.br", endereco: "" },
+    { nome: "Banco Itaú", email: "itaujudicial@itau-unibanco.com.br", endereco: "" },
+    { nome: "Banco Santander", email: "gerenciaoficios@santander.com.br", endereco: "" },
+    { nome: "Claro Telefonia", email: "oficios.doc@claro.com.br", endereco: "" },
+    { nome: "Tim Operadora", email: "graop_oficios@timbrasil.com.br", endereco: "" },
     { nome: "Vivo Operadora", email: "ordens.sigilo.br@telefonica.com", endereco: "" },
     { nome: "Oi (antiga Telemar)", email: "qsoi@oi.net.br", endereco: "" },
-    { nome: "Claro Telefonia", email: "oficios.doc@claro.com.br", endereco: "" },
-    { nome: "Junta Comercial do Estado do Ceará - JUCEC", email: "protocolo@jucec.ce.gov.br", endereco: "" },
+    { nome: "UBER DO BRASIL TECNOLOGIA LTDA.", email: "correspondencias@uber.com", endereco: "" },
+    { nome: "99pop", email: "juridico@99app.com", endereco: "" },
+    { nome: "Mercado Livre", email: "oficios@mercadolivre.com", endereco: "" },
     { nome: "DETRAN-CE", email: "judicial@detran.ce.gov.br", endereco: "" },
+    { nome: "Junta Comercial do Estado do Ceará - JUCEC", email: "protocolo@jucec.ce.gov.br", endereco: "" },
+    { nome: "Receita Federal", email: "expedientesrfb.rf03@rfb.gov.br", endereco: "" },
   ];
+
+  const LISTA_COMPLETA = [
+  { nome: "ENEL", email: "resposta.cliente@enel.com", endereco: "" },
+  { nome: "CAGECE", email: "ouvidoria.geral@cge.ce.gov.br", endereco: "" },
+  { nome: "Banco do Brasil", email: "cenopserv.oficioscwb@bb.com.br", endereco: "" },
+  { nome: "Caixa Econômica Federal - Agência Fórum Clóvis Beviláqua", email: "ag4030@caixa.gov.br", endereco: "" },
+  { nome: "Banco Bradesco", email: "oficiosjudiciais@bradesco.com.br", endereco: "" },
+  { nome: "Banco do Nordeste SA", email: "ouvidoria@bnb.gov.br", endereco: "" },
+  { nome: "Banco Itaú", email: "itaujudicial@itau-unibanco.com.br", endereco: "" },
+  { nome: "Banco Santander", email: "gerenciaoficios@santander.com.br", endereco: "" },
+  { nome: "Banco C6", email: "oficiosbacen@c6bank.com.br", endereco: "" },
+  { nome: "Banco Safra S/A", email: "stvm-corretora@safra.com.br", endereco: "" },
+  { nome: "BV Financeira S/A", email: "intimacoesoficiais@bv.com.br", endereco: "" },
+  { nome: "Claro Telefonia", email: "oficios.doc@claro.com.br", endereco: "" },
+  { nome: "Tim Operadora", email: "graop_oficios@timbrasil.com.br", endereco: "" },
+  { nome: "Vivo Operadora", email: "ordens.sigilo.br@telefonica.com", endereco: "" },
+  { nome: "Oi (antiga Telemar)", email: "qsoi@oi.net.br", endereco: "" },
+  { nome: "UBER DO BRASIL TECNOLOGIA LTDA.", email: "correspondencias@uber.com", endereco: "" },
+  { nome: "99pop", email: "juridico@99app.com", endereco: "" },
+  { nome: "RAPPI", email: "litigation.br@rappi.com", endereco: "" },
+  { nome: "Mercado Livre", email: "oficios@mercadolivre.com", endereco: "" },
+  { nome: "DETRAN-CE", email: "judicial@detran.ce.gov.br", endereco: "" },
+  { nome: "Junta Comercial do Estado do Ceará - JUCEC", email: "protocolo@jucec.ce.gov.br", endereco: "" },
+  { nome: "Receita Federal", email: "expedientesrfb.rf03@rfb.gov.br", endereco: "" },
+  { nome: "Instituto Nacional de Seguridade Social - INSS", email: "gexfor@inss.gov.br", endereco: "" },
+  { nome: "Secretaria da Segurança Pública e Defesa Social do Estado do Ceará - SSPDS", email: "secretaria@sspds.ce.gov.br", endereco: "" },
+  { nome: "Polícia Rodoviária Federal", email: "protocolo.ce@prf.gov.br", endereco: "" },
+  { nome: "Superintendência da Polícia Rodoviária Federal no Ceará", email: "protocolo.ce@prf.gov.br", endereco: "" },
+  { nome: "Superintendência Regional da Polícia Federal no Ceará", email: "gab.srce@pf.gov.br", endereco: "" },
+  { nome: "Secretaria de Saúde do Estado do Ceará", email: "protocologeral.sesa@saude.ce.gov.br", endereco: "" },
+  { nome: "Secretaria Municipal de Saúde de Fortaleza", email: "cojur@sms.fortaleza.ce.gov.br", endereco: "" },
+  { nome: "SEFAZ", email: "asjur@sefaz.ce.gov.br", endereco: "" },
+  { nome: "Procuradoria Geral do Estado do Ceará - PGE-CE", email: "pge@pge.ce.gov.br", endereco: "" },
+  { nome: "Procuradoria Geral do Estado do Ceará - PGE-CE (somente inscrição em dívida ativa)", email: "prodat@pge.ce.gov.br", endereco: "" },
+  { nome: "Ordem dos Advogados do Brasil - Seccional Ceará (OAB/CE)", email: "presidencia@oabce.org.br", endereco: "" },
+
+  // Endereços físicos constam expressamente no PDF
+  { 
+    nome: "AMAZON", 
+    email: "", 
+    endereco: "Av. Juscelino Kubitschek, 2041, Torre E, 18º andar - São Paulo/SP - CEP: 04543-011" 
+  },
+  { 
+    nome: "Capitania dos Portos do Ceará", 
+    email: "", 
+    endereco: "Av. Vicente de Castro, 4917 - Mucuripe, Fortaleza/CE - CEP: 60180-410" 
+  },
+  { 
+    nome: "CAGED - Cadastro Geral de Empregados e Desempregados", 
+    email: "", 
+    endereco: "Esplanada dos Ministérios, Bloco F, Ed. Anexo, Ala B, Sala 211 - Brasília/DF - CEP: 70056-900" 
+  },
+];
 
   let popupRef = null;
 
@@ -46,7 +104,6 @@
 
     event.preventDefault();
     event.stopPropagation();
-
     openOficiosWindow();
   }
 
@@ -60,7 +117,8 @@
         popupRef.focus();
         popupRef.renderOficiosApp({
           requeridos,
-          destinatarios: DESTINATARIOS,
+          favoritos: FAVORITOS,
+          destinatarios: LISTA_COMPLETA,
           processo,
           hoje,
         });
@@ -68,20 +126,20 @@
       } catch (_) {}
     }
 
-    popupRef = window.open("", "_blank", "width=1200,height=850,scrollbars=yes,resizable=yes");
+    popupRef = window.open("", "_blank", "width=1300,height=900,scrollbars=yes,resizable=yes");
     if (!popupRef) {
       alert("Não foi possível abrir a nova janela. Verifique se o navegador bloqueou pop-ups.");
       return;
     }
 
-    const html = buildWindowHTML();
     popupRef.document.open();
-    popupRef.document.write(html);
+    popupRef.document.write(buildWindowHTML());
     popupRef.document.close();
 
     const payload = {
       requeridos,
-      destinatarios: DESTINATARIOS,
+      favoritos: FAVORITOS,
+      destinatarios: LISTA_COMPLETA,
       processo,
       hoje,
     };
@@ -119,6 +177,7 @@
       --green-dark: #166c30;
       --red: #c62828;
       --shadow: 0 10px 30px rgba(0,0,0,.08);
+      --amber: #ff8b22;
     }
 
     * { box-sizing: border-box; }
@@ -157,7 +216,7 @@
 
     .layout {
       display: grid;
-      grid-template-columns: 390px 1fr;
+      grid-template-columns: 430px 1fr;
       gap: 20px;
       align-items: start;
     }
@@ -194,7 +253,8 @@
     }
 
     .field input[type="text"],
-    .field input[type="number"] {
+    .field input[type="number"],
+    .field input[type="email"] {
       width: 100%;
       padding: 10px 12px;
       border: 1px solid var(--line);
@@ -203,14 +263,13 @@
       outline: none;
     }
 
-    .field input[type="text"]:focus,
-    .field input[type="number"]:focus {
+    .field input:focus {
       border-color: var(--blue);
       box-shadow: 0 0 0 3px rgba(31,111,235,.12);
     }
 
     .scroll-box {
-      max-height: 220px;
+      max-height: 210px;
       overflow: auto;
       border: 1px solid var(--line);
       border-radius: 10px;
@@ -236,7 +295,7 @@
       margin-top: 8px;
     }
 
-    .row input[type="text"] {
+    .row > * {
       flex: 1;
     }
 
@@ -249,6 +308,7 @@
       font-size: 14px;
       font-weight: bold;
       transition: .15s ease;
+      white-space: nowrap;
     }
 
     .btn-primary {
@@ -298,7 +358,7 @@
       font-size: 13px;
       color: var(--muted);
       margin-top: 8px;
-      line-height: 1.4;
+      line-height: 1.5;
     }
 
     .result-head {
@@ -369,7 +429,43 @@
       text-align: center;
     }
 
-    @media (max-width: 980px) {
+    .section-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #38485c;
+      margin-bottom: 8px;
+    }
+
+    .manual-card {
+      border: 1px dashed #cfd8e6;
+      border-radius: 12px;
+      padding: 12px;
+      background: #fcfdff;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .required-mark {
+      color: var(--red);
+      font-weight: bold;
+    }
+
+    .warning-box {
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #fff6ec;
+      color: #8a4d09;
+      border: 1px solid #ffd8b0;
+      font-size: 13px;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    @media (max-width: 1050px) {
       .layout {
         grid-template-columns: 1fr;
       }
@@ -387,6 +483,14 @@
       <div class="panel">
         <div class="head">Configuração</div>
         <div class="body">
+          <div class="warning-box" id="warningBox"></div>
+
+          <div class="field">
+            <label for="siglaServidor">Iniciais do nome do servidor <span class="required-mark">*</span></label>
+            <input id="siglaServidor" type="text" maxlength="20" placeholder="Ex.: JNELB" />
+            <div class="hint">Esse valor substituirá a última parte do número do ofício.</div>
+          </div>
+
           <div class="field">
             <label for="numeroInicial">Numeração do primeiro ofício</label>
             <input id="numeroInicial" type="number" min="1" value="1" />
@@ -397,18 +501,42 @@
             <div id="requeridosBox" class="scroll-box"></div>
             <div class="row">
               <input id="manualReq" type="text" placeholder="Digitar requerido manualmente" />
-              <button id="addManualReq" class="btn btn-light" type="button">Adicionar</button>
+              <button id="addManualReq" class="btn btn-light" type="button" style="flex:0 0 auto;">Adicionar</button>
             </div>
           </div>
 
           <div class="field">
-            <label for="destSearch">Pesquisar destinatários</label>
+            <div class="section-title">⭐ Destinatários mais usados</div>
+            <div id="favoritosBox" class="scroll-box"></div>
+          </div>
+
+          <div class="field">
+            <label for="destSearch">Pesquisar na lista completa</label>
             <input id="destSearch" type="text" placeholder="Ex.: Enel, Banco, Uber, Delegacia..." />
           </div>
 
           <div class="field">
-            <label>Destinatários</label>
+            <div class="section-title">📚 Lista completa</div>
             <div id="destinatariosBox" class="scroll-box"></div>
+          </div>
+
+          <div class="field">
+            <div class="section-title">➕ Adicionar destinatário manualmente</div>
+            <div class="manual-card">
+              <div class="field">
+                <label for="manualDestNome">Nome do destinatário</label>
+                <input id="manualDestNome" type="text" placeholder="Ex.: Empresa X" />
+              </div>
+              <div class="field">
+                <label for="manualDestEmail">E-mail</label>
+                <input id="manualDestEmail" type="email" placeholder="exemplo@dominio.com" />
+              </div>
+              <div class="field">
+                <label for="manualDestEndereco">Endereço físico</label>
+                <input id="manualDestEndereco" type="text" placeholder="Usado quando não houver e-mail" />
+              </div>
+              <button id="addManualDest" class="btn btn-light" type="button">Adicionar destinatário</button>
+            </div>
           </div>
 
           <div class="actions">
@@ -441,7 +569,9 @@
 
       let state = {
         requeridos: [],
+        favoritos: [],
         destinatarios: [],
+        destinatariosManuais: [],
         processo: "",
         hoje: "",
       };
@@ -466,6 +596,10 @@
           .replace(/\\s+/g, " ")
           .trim()
           .toUpperCase();
+      }
+
+      function makeDestKey(dest) {
+        return [normalizeUpper(dest.nome), normalizeUpper(dest.email || ""), normalizeUpper(dest.endereco || "")].join("|");
       }
 
       function dedupeRequeridos(list) {
@@ -534,6 +668,28 @@
         });
       }
 
+      function renderFavoritos() {
+        const box = document.getElementById("favoritosBox");
+        box.innerHTML = "";
+
+        if (!state.favoritos.length) {
+          box.innerHTML = '<div class="item">Nenhum favorito cadastrado.</div>';
+          return;
+        }
+
+        state.favoritos.forEach((dest, index) => {
+          const desc = dest.email ? dest.email : (dest.endereco || "Sem e-mail e sem endereço");
+          const key = makeDestKey(dest);
+
+          const row = document.createElement("label");
+          row.className = "item";
+          row.innerHTML =
+            '<input type="checkbox" class="dest-check dest-fav-check" data-key="' + escapeHtml(key) + '" data-source="fav" data-nome="' + escapeHtml(dest.nome) + '" data-email="' + escapeHtml(dest.email || "") + '" data-endereco="' + escapeHtml(dest.endereco || "") + '">' +
+            ' <strong>' + escapeHtml(dest.nome) + '</strong><br><span style="color:#5f6b7a;font-size:12px;">' + escapeHtml(desc) + '</span>';
+          box.appendChild(row);
+        });
+      }
+
       function renderDestinatarios(filter = "") {
         const box = document.getElementById("destinatariosBox");
         box.innerHTML = "";
@@ -549,19 +705,19 @@
           return;
         }
 
-        itens.forEach((dest, index) => {
-          const id = "dest_" + index + "_" + Math.random().toString(36).slice(2, 8);
-          const desc = dest.email
-            ? dest.email
-            : (dest.endereco || "Sem e-mail e sem endereço cadastrado");
+        itens.forEach((dest) => {
+          const desc = dest.email ? dest.email : (dest.endereco || "Sem e-mail e sem endereço");
+          const key = makeDestKey(dest);
 
           const row = document.createElement("label");
           row.className = "item";
           row.innerHTML =
-            '<input type="checkbox" class="dest-check" data-nome="' + escapeHtml(dest.nome) + '" data-email="' + escapeHtml(dest.email || "") + '" data-endereco="' + escapeHtml(dest.endereco || "") + '" id="' + id + '">' +
+            '<input type="checkbox" class="dest-check dest-list-check" data-key="' + escapeHtml(key) + '" data-source="list" data-nome="' + escapeHtml(dest.nome) + '" data-email="' + escapeHtml(dest.email || "") + '" data-endereco="' + escapeHtml(dest.endereco || "") + '">' +
             ' <strong>' + escapeHtml(dest.nome) + '</strong><br><span style="color:#5f6b7a;font-size:12px;">' + escapeHtml(desc) + '</span>';
           box.appendChild(row);
         });
+
+        syncDestCheckboxes();
       }
 
       function addManualRequerido() {
@@ -571,16 +727,46 @@
 
         state.requeridos = dedupeRequeridos([
           ...state.requeridos,
-          {
-            nome: value,
-            documentoTipo: "",
-            documentoNumero: "",
-            qualificacao: "",
-          }
+          { nome: value, documentoTipo: "", documentoNumero: "", qualificacao: "" }
         ]);
 
         input.value = "";
         renderRequeridos();
+        updateSummary();
+      }
+
+      function addManualDestinatario() {
+        const nome = norm(document.getElementById("manualDestNome").value);
+        const email = norm(document.getElementById("manualDestEmail").value);
+        const endereco = norm(document.getElementById("manualDestEndereco").value);
+
+        if (!nome) {
+          showWarning("Informe o nome do destinatário manual.");
+          return;
+        }
+
+        if (!email && !endereco) {
+          showWarning("Informe e-mail ou endereço físico para o destinatário manual.");
+          return;
+        }
+
+        const novo = { nome, email, endereco };
+        const key = makeDestKey(novo);
+
+        const jaExiste = [...state.favoritos, ...state.destinatarios, ...state.destinatariosManuais]
+          .some((d) => makeDestKey(d) === key);
+
+        if (!jaExiste) {
+          state.destinatariosManuais.push(novo);
+        }
+
+        document.getElementById("manualDestNome").value = "";
+        document.getElementById("manualDestEmail").value = "";
+        document.getElementById("manualDestEndereco").value = "";
+
+        renderDestinatarios(document.getElementById("destSearch").value);
+        autoCheckDestinationByKey(key);
+        hideWarning();
         updateSummary();
       }
 
@@ -594,13 +780,22 @@
       }
 
       function getSelectedDestinatarios() {
-        return Array.from(document.querySelectorAll(".dest-check:checked"))
-          .map((el) => ({
+        const seen = new Set();
+        const out = [];
+
+        Array.from(document.querySelectorAll(".dest-check:checked")).forEach((el) => {
+          const dest = {
             nome: norm(el.dataset.nome),
             email: norm(el.dataset.email),
             endereco: norm(el.dataset.endereco),
-          }))
-          .filter((d) => d.nome);
+          };
+          const key = makeDestKey(dest);
+          if (seen.has(key)) return;
+          seen.add(key);
+          out.push(dest);
+        });
+
+        return out;
       }
 
       function updateSummary() {
@@ -621,7 +816,18 @@
         return state.hoje || "";
       }
 
+      function getSiglaServidor() {
+        return norm(document.getElementById("siglaServidor").value).toUpperCase();
+      }
+
+      function buildNumeroOficio(numero) {
+        const sigla = getSiglaServidor();
+        return numero + "/2026/SEJUDPG/CVESP/" + sigla;
+      }
+
       function buildOficioTexto(numero, requerido, destinatario) {
+        const numeroCompleto = buildNumeroOficio(numero);
+
         const headerDestino = destinatario.email
           ? "Ao(À) " + destinatario.nome + "\\nE-mail: " + destinatario.email
           : "Ao(À) " + destinatario.nome + "\\nEndereço: " + (destinatario.endereco || "[ENDEREÇO NÃO INFORMADO]");
@@ -629,7 +835,7 @@
         const parteLinha = buildParteLinha(requerido);
 
         return [
-          "Ofício nº " + numero + "/2026/SEJUDPG/CVESP/JNELB",
+          "Ofício nº " + numeroCompleto,
           "",
           formatDateLine(),
           "",
@@ -678,7 +884,31 @@
         }
       }
 
+      function showWarning(message) {
+        const box = document.getElementById("warningBox");
+        box.textContent = message;
+        box.style.display = "block";
+      }
+
+      function hideWarning() {
+        const box = document.getElementById("warningBox");
+        box.textContent = "";
+        box.style.display = "none";
+      }
+
+      function validateBeforeGenerate() {
+        const sigla = getSiglaServidor();
+        if (!sigla) {
+          showWarning("Preencha obrigatoriamente o campo 'Iniciais do nome do servidor'.");
+          return false;
+        }
+        hideWarning();
+        return true;
+      }
+
       function generateOficios() {
+        if (!validateBeforeGenerate()) return;
+
         const numeroInicial = parseInt(document.getElementById("numeroInicial").value, 10) || 1;
         const requeridos = getSelectedRequeridos();
         const destinatarios = getSelectedDestinatarios();
@@ -686,22 +916,25 @@
         const info = document.getElementById("resultadoInfo");
 
         if (!requeridos.length) {
-          alert("Selecione ao menos um requerido.");
+          showWarning("Selecione ao menos um requerido.");
           return;
         }
 
         if (!destinatarios.length) {
-          alert("Selecione ao menos um destinatário.");
+          showWarning("Selecione ao menos um destinatário.");
           return;
         }
 
+        hideWarning();
         resultado.innerHTML = "";
         let contador = numeroInicial;
         let total = 0;
 
         for (const dest of destinatarios) {
           for (const req of requeridos) {
+            const numeroCompleto = buildNumeroOficio(contador);
             const texto = buildOficioTexto(contador, req, dest);
+
             const card = document.createElement("div");
             card.className = "oficio-card";
 
@@ -710,7 +943,7 @@
 
             const titleWrap = document.createElement("div");
             titleWrap.innerHTML =
-              '<div class="oficio-title">Ofício nº ' + contador + '/2026/SEJUDPG/CVESP/JNELB</div>' +
+              '<div class="oficio-title">Ofício nº ' + escapeHtml(numeroCompleto) + '</div>' +
               '<div class="oficio-meta">' + escapeHtml(dest.nome) + ' • ' + escapeHtml(formatRequeridoLabel(req)) + '</div>';
 
             const btn = document.createElement("button");
@@ -754,17 +987,54 @@
         info.textContent = total + " ofício(s) gerado(s).";
       }
 
+      function syncDestCheckboxes() {
+        const boxes = Array.from(document.querySelectorAll(".dest-check"));
+        const selectedKeys = new Set(
+          boxes.filter((el) => el.checked).map((el) => el.dataset.key)
+        );
+
+        boxes.forEach((el) => {
+          if (selectedKeys.has(el.dataset.key)) {
+            el.checked = true;
+          }
+        });
+      }
+
+      function autoCheckDestinationByKey(key) {
+        document.querySelectorAll('.dest-check[data-key="' + cssEscapeSimple(key) + '"]').forEach((el) => {
+          el.checked = true;
+        });
+      }
+
+      function cssEscapeSimple(value) {
+        return String(value).replace(/"/g, '\\"');
+      }
+
       function bindEvents() {
         if (window.__oficiosBindDone) return;
         window.__oficiosBindDone = true;
 
         document.getElementById("addManualReq").addEventListener("click", addManualRequerido);
+        document.getElementById("addManualDest").addEventListener("click", addManualDestinatario);
 
         document.getElementById("manualReq").addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             e.preventDefault();
             addManualRequerido();
           }
+        });
+
+        ["manualDestNome", "manualDestEmail", "manualDestEndereco"].forEach((id) => {
+          document.getElementById(id).addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addManualDestinatario();
+            }
+          });
+        });
+
+        document.getElementById("siglaServidor").addEventListener("input", (e) => {
+          e.target.value = e.target.value.toUpperCase();
         });
 
         document.getElementById("destSearch").addEventListener("input", (e) => {
@@ -785,22 +1055,58 @@
         });
 
         document.addEventListener("change", (e) => {
-          if (e.target && (e.target.classList.contains("req-check") || e.target.classList.contains("dest-check"))) {
+          const target = e.target;
+          if (!target) return;
+
+          if (target.classList.contains("dest-check")) {
+            const key = target.dataset.key;
+            document.querySelectorAll('.dest-check[data-key="' + cssEscapeSimple(key) + '"]').forEach((el) => {
+              el.checked = target.checked;
+            });
+          }
+
+          if (target.classList.contains("req-check") || target.classList.contains("dest-check")) {
             updateSummary();
           }
         });
       }
 
+      function dedupeDestinatarios(list) {
+        const seen = new Set();
+        const out = [];
+
+        for (const item of list) {
+          if (!item || !norm(item.nome)) continue;
+          const clean = {
+            nome: norm(item.nome),
+            email: norm(item.email || ""),
+            endereco: norm(item.endereco || ""),
+          };
+          const key = makeDestKey(clean);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          out.push(clean);
+        }
+
+        return out;
+      }
+
       window.renderOficiosApp = function renderOficiosApp(payload) {
         state = {
           requeridos: Array.isArray(payload?.requeridos) ? payload.requeridos : [],
-          destinatarios: Array.isArray(payload?.destinatarios) ? payload.destinatarios : [],
+          favoritos: dedupeDestinatarios(Array.isArray(payload?.favoritos) ? payload.favoritos : []),
+          destinatarios: dedupeDestinatarios([
+            ...(Array.isArray(payload?.destinatarios) ? payload.destinatarios : []),
+            ...state.destinatariosManuais,
+          ]),
+          destinatariosManuais: state.destinatariosManuais || [],
           processo: payload?.processo || "",
           hoje: payload?.hoje || "",
         };
 
         renderRequeridos();
-        renderDestinatarios();
+        renderFavoritos();
+        renderDestinatarios(document.getElementById("destSearch")?.value || "");
         bindEvents();
         updateSummary();
       };
@@ -819,7 +1125,6 @@
   function extractRequeridosFromPage() {
     const fromPoloPassivo = extractFromPoloPassivo();
     if (fromPoloPassivo.length) return fromPoloPassivo;
-
     return extractFallbackFromText();
   }
 
@@ -835,16 +1140,7 @@
       if (!text) continue;
 
       const parsed = parseParteText(text);
-      if (parsed) {
-        result.push(parsed);
-      } else {
-        result.push({
-          nome: text,
-          documentoTipo: "",
-          documentoNumero: "",
-          qualificacao: "",
-        });
-      }
+      if (parsed) result.push(parsed);
     }
 
     return dedupeStringsAsObjects(result);
@@ -852,7 +1148,6 @@
 
   function getCleanCellText(cell) {
     if (!cell) return "";
-
     const clone = cell.cloneNode(true);
     clone.querySelectorAll("i, svg, button").forEach((el) => el.remove());
 
@@ -954,24 +1249,14 @@
           const raw = lines[i].slice(label.length).trim();
           if (raw) {
             splitNames(raw).forEach((n) => {
-              encontrados.push({
-                nome: n,
-                documentoTipo: "",
-                documentoNumero: "",
-                qualificacao: "",
-              });
+              encontrados.push({ nome: n, documentoTipo: "", documentoNumero: "", qualificacao: "" });
             });
           }
 
           const next = lines[i + 1] || "";
           if (next && !looksLikeStructuralLine(next)) {
             splitNames(next).forEach((n) => {
-              encontrados.push({
-                nome: n,
-                documentoTipo: "",
-                documentoNumero: "",
-                qualificacao: "",
-              });
+              encontrados.push({ nome: n, documentoTipo: "", documentoNumero: "", qualificacao: "" });
             });
           }
         }
@@ -985,17 +1270,13 @@
     return String(value || "")
       .split(/\s{2,}|;|,(?=\s*[A-ZÁÉÍÓÚÂÊÔÃÕÇ])/)
       .map((part) => part.trim())
-      .filter((part) => {
-        if (!part) return false;
-        if (part.length < 3) return false;
-        if (/^\[.*\]$/.test(part)) return false;
-        return true;
-      });
+      .filter((part) => part && part.length >= 3 && !/^\[.*\]$/.test(part));
   }
 
   function looksLikeStructuralLine(value) {
     const v = normalizeUpper(value);
     if (!v) return true;
+
     return [
       "PROCESSO:",
       "CLASSE:",
