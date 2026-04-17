@@ -109,7 +109,7 @@
     const payload = {
       requeridos,
       destinatarios: DESTINATARIOS,
-      processo,
+      ,
       hoje,
     };
 
@@ -851,7 +851,7 @@
           "",
           partesBloco,
           "",
-          "A presente solicitação tem por finalidade possibilitar a localização da parte nos autos do processo nº " + (state.processo || "[NÚMERO DO PROCESSO]") + ".",
+          "A presente solicitação tem por finalidade possibilitar a localização da parte nos autos do processo em epígrafe.",
           "",
           "Destaco que as informações serão utilizadas exclusivamente para fins processuais.",
           "",
