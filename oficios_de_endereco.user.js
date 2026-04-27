@@ -109,7 +109,6 @@
     const payload = {
       requeridos,
       destinatarios: DESTINATARIOS,
-      ,
       hoje,
     };
 
