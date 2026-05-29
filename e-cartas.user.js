@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name         PJe TJCE - Certidões E-Carta + Correios + Monitor
 // @namespace    https://pje.tjce.jus.br/
-// @version      1.7.0
+// @version      1.7.1
+// @author       Nigério Bezerra
 // @description  Certidões E-Carta por linha, integração com Correios e atalho para Monitor E-Carta por processo.
 // @match        https://pje.tjce.jus.br/pje1grau/ECarta/detalhe/listView.seam*
 // @match        https://pje.tjce.jus.br/pje1grau/ECarta/monitor.seam*
@@ -13,8 +14,6 @@
 
 (function () {
   'use strict';
-
-  const DEBUG = false;
 
   const APP = {
     pjeOrigin: 'https://pje.tjce.jus.br',
@@ -32,10 +31,6 @@
       monitorAutofillDone: 'pjeEcartaMonitorAutofillDone'
     }
   };
-
-  function debugLog(...args) {
-    if (DEBUG) console.log(...args);
-  }
 
   function isCorreiosPage() {
     return location.hostname === 'rastreamento.correios.com.br';
@@ -126,7 +121,6 @@
 
     removeCertidaoTitle(text) {
       const lines = String(text || '').split('\n');
-      if (!lines.length) return '';
 
       while (lines.length && !Shared.normalizeSpaces(lines[0])) {
         lines.shift();
@@ -198,9 +192,7 @@
       toast.classList.add('show');
 
       clearTimeout(Shared._toastTimer);
-      Shared._toastTimer = setTimeout(() => {
-        toast.classList.remove('show');
-      }, 3200);
+      Shared._toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
     },
 
     injectGlobalStyles() {
@@ -290,46 +282,55 @@
             cabecalho: `Certifico que, em consulta ao sistema E-Carta, verifiquei que o expediente de ID Envio ${safeIdEnvio}, encaminhado em ${safeDataEnvio}, não gerou objeto postal junto aos Correios, constando no retorno do sistema a seguinte mensagem: "${safeMensagem}".`,
             complemento: 'Em razão disso, não foi possível realizar o rastreamento do Aviso de Recebimento.'
           };
+
         case 'FALHA_SERVICO_ECARTA':
           return {
             cabecalho: `Certifico que realizei consulta ao sistema E-Carta para verificação da situação do expediente de ID Envio ${safeIdEnvio}, encaminhado em ${safeDataEnvio}.`,
             complemento: 'Contudo, o sistema retornou a informação de que não foi possível recuperar dados atualizados no serviço E-Carta, razão pela qual não foi possível obter informações atualizadas acerca do objeto postal ou do respectivo Aviso de Recebimento.'
           };
+
         case 'AR_NAO_JUNTADO':
           return {
             cabecalho: `Certifico que, embora haja registro de movimentação ou retorno relacionado ao expediente de ID Envio ${safeIdEnvio}, não foi disponibilizado automaticamente nos autos o respectivo Aviso de Recebimento, não dispondo esta Secretaria, neste momento, de ferramenta que permita resgatar diretamente o documento pelo sistema E-Carta.`,
             complemento: ''
           };
+
         case 'CORREIOS_ENTREGUE':
           return {
             cabecalho: `Certifico que, em consulta ao sistema de rastreamento dos Correios, referente ao objeto postal nº ${safeCodigo}, verifiquei que o objeto foi entregue ao destinatário em ${safeDataEntrega}.`,
             complemento: ''
           };
+
         case 'CORREIOS_PENDENTE':
           return {
             cabecalho: `Certifico que, em consulta ao sistema de rastreamento dos Correios, referente ao objeto postal nº ${safeCodigo}, verifiquei que, até o presente momento, não há confirmação de retorno do Aviso de Recebimento, constando a situação "${safeStatus}".`,
             complemento: ''
           };
+
         case 'CORREIOS_TENTATIVA_FRUSTRADA':
           return {
             cabecalho: `Certifico que, em consulta ao sistema de rastreamento dos Correios, referente ao objeto postal nº ${safeCodigo}, verifiquei a ocorrência de tentativa de entrega não efetuada, constando a situação "${safeStatus}".`,
             complemento: ''
           };
+
         case 'CORREIOS_AGUARDANDO_RETIRADA':
           return {
             cabecalho: `Certifico que, em consulta ao sistema de rastreamento dos Correios, referente ao objeto postal nº ${safeCodigo}, verifiquei que o objeto encontra-se aguardando retirada em agência, constando a situação "${safeStatus}".`,
             complemento: ''
           };
+
         case 'CORREIOS_DEVOLVIDO':
           return {
             cabecalho: `Certifico que, em consulta ao sistema de rastreamento dos Correios, referente ao objeto postal nº ${safeCodigo}, verifiquei que o objeto foi devolvido, constando a situação "${safeStatus}".`,
             complemento: ''
           };
+
         case 'CORREIOS_NAO_CONSULTADO':
           return {
-            cabecalho: `Certifico que o expediente possui objeto postal identificado sob o nº ${safeCodigo}. Contudo, não foi possível, nesta oportunidade, concluir a consulta ao respectivo rastreamento no sistema dos Correios.`,
+            cabecalho: `Certifico que tentei realizar consulta ao sistema de rastreamento dos Correios referente ao objeto postal nº ${safeCodigo}. Contudo, não foi possível concluir a consulta, constando a ocorrência "${safeStatus}".`,
             complemento: ''
           };
+
         default:
           return {
             cabecalho: `Certifico que consultei os dados do expediente de ID Envio ${safeIdEnvio}, encaminhado em ${safeDataEnvio}, não tendo sido possível enquadrar automaticamente a situação em um cenário específico.`,
@@ -383,8 +384,7 @@
   const PJeCertidoes = {
     config: {
       modalId: 'pje-ecarta-certidoes-modal',
-      styleId: 'pje-ecarta-certidoes-style',
-      observerFlag: 'ecartaCertTableEnhanced'
+      styleId: 'pje-ecarta-certidoes-style'
     },
 
     statusOptions: [
@@ -507,8 +507,6 @@
           background: #f8fafc;
           user-select: none;
           -webkit-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
           cursor: default;
         }
 
@@ -562,7 +560,6 @@
           display: flex;
           align-items: center;
           gap: 8px;
-          padding-top: 2px;
           margin-top: 6px;
         }
 
@@ -653,7 +650,7 @@
         if (!data || data.type !== APP.messageType) return;
 
         Shared.saveTrackingPayload(data.payload);
-        Shared.showToast(`Dados do Correios recebidos para ${data.payload.codigo || 'código não identificado'}.`);
+        Shared.showToast(`Dados dos Correios recebidos para ${data.payload.codigo || 'código não identificado'}.`);
 
         if (PJeCertidoes.currentModalApi?.applyTrackingData) {
           PJeCertidoes.currentModalApi.applyTrackingData(data.payload);
@@ -662,21 +659,18 @@
     },
 
     findSituacaoAtualizadaTable() {
-      const panelHeaders = [...document.querySelectorAll('.rich-panel-header')];
-      const header = panelHeaders.find(el =>
+      const headers = [...document.querySelectorAll('.rich-panel-header')];
+      const header = headers.find(el =>
         Shared.normalizeText(el.textContent).includes('e-carta - servico cnj - situacao atualizada')
       );
       if (!header) return null;
 
       const panel = header.closest('.rich-panel');
-      if (!panel) return null;
-
-      return panel.querySelector('table.rich-table');
+      return panel?.querySelector('table.rich-table') || null;
     },
 
     getHeaderMap(table) {
-      const ths = [...table.querySelectorAll('thead th')];
-      return ths.map(th => Shared.normalizeText(th.textContent));
+      return [...table.querySelectorAll('thead th')].map(th => Shared.normalizeText(th.textContent));
     },
 
     injectButtonsInSituacaoTable() {
@@ -685,6 +679,7 @@
 
       const theadRow = table.querySelector('thead tr');
       const tbodyRows = [...table.querySelectorAll('tbody tr')];
+
       if (!theadRow || !tbodyRows.length) return;
 
       if (!theadRow.querySelector('.ecarta-action-th')) {
@@ -697,13 +692,14 @@
 
       const headers = PJeCertidoes.getHeaderMap(table);
 
-      tbodyRows.forEach((row) => {
+      tbodyRows.forEach(row => {
         if (row.querySelector('.ecarta-action-td')) return;
 
         const cells = [...row.querySelectorAll('td')];
         if (!cells.length) return;
 
         const rowData = PJeCertidoes.readSituacaoRow(headers, cells);
+
         const td = document.createElement('td');
         td.className = 'rich-table-cell ecarta-action-td';
 
@@ -711,6 +707,7 @@
         btn.type = 'button';
         btn.className = 'ecarta-row-button';
         btn.textContent = 'Gerar Certidão';
+
         btn.addEventListener('click', () => {
           const pageData = PJeCertidoes.collectPageDataFromSituacaoRow(rowData);
           const classification = PJeCertidoes.classifyScenario(pageData);
@@ -723,38 +720,28 @@
     },
 
     readSituacaoRow(headers, cells) {
-      const findIdx = (name) => headers.findIndex(h => h === name);
-
-      const idxSituacao = findIdx('situacao');
-      const idxDestinatario = findIdx('destinatario');
-      const idxCodigoLocalizador = findIdx('codigo localizador');
-      const idxEndDest = findIdx('end. destinatario');
-      const idxRemetente = findIdx('remetente');
-      const idxIdProcDoc = findIdx('id processo documento');
-      const idxProcesso = findIdx('processo');
-      const idxLote = findIdx('n. lote');
-      const idxServicoAdicional = findIdx('servico adicional');
-      const idxTipo = findIdx('tipo');
-
-      const get = (idx) => idx >= 0 ? Shared.normalizeSpaces(cells[idx]?.textContent || '') : '';
+      const findIdx = name => headers.findIndex(h => h === name);
+      const get = idx => idx >= 0 ? Shared.normalizeSpaces(cells[idx]?.textContent || '') : '';
 
       return {
-        situacao: get(idxSituacao),
-        destinatario: get(idxDestinatario),
-        codigoLocalizador: get(idxCodigoLocalizador),
-        enderecoDestinatario: get(idxEndDest),
-        remetente: get(idxRemetente),
-        idProcessoDocumento: get(idxIdProcDoc),
-        processo: get(idxProcesso),
-        lote: get(idxLote),
-        servicoAdicional: get(idxServicoAdicional),
-        tipo: get(idxTipo)
+        situacao: get(findIdx('situacao')),
+        destinatario: get(findIdx('destinatario')),
+        codigoLocalizador: get(findIdx('codigo localizador')),
+        enderecoDestinatario: get(findIdx('end. destinatario')),
+        remetente: get(findIdx('remetente')),
+        idProcessoDocumento: get(findIdx('id processo documento')),
+        processo: get(findIdx('processo')),
+        lote: get(findIdx('n. lote')),
+        servicoAdicional: get(findIdx('servico adicional')),
+        tipo: get(findIdx('tipo'))
       };
     },
 
     collectPageDataFromSituacaoRow(rowData) {
       const codigo = rowData.codigoLocalizador || '';
-      const trackingSalvo = Shared.isValidPostalCode(codigo) ? Shared.getTrackingPayload(codigo.toUpperCase()) : null;
+      const trackingSalvo = Shared.isValidPostalCode(codigo)
+        ? Shared.getTrackingPayload(codigo.toUpperCase())
+        : null;
 
       return {
         idEnvio: PJeCertidoes.extractIdEnvio(),
@@ -770,13 +757,14 @@
     },
 
     extractIdEnvio() {
-      const labelNodes = Array.from(document.querySelectorAll('#expedientesEnviadosViewView .propertyView'));
-      for (const node of labelNodes) {
+      const nodes = [...document.querySelectorAll('#expedientesEnviadosViewView .propertyView')];
+
+      for (const node of nodes) {
         const nameEl = node.querySelector('.name');
         const valueEl = node.querySelector('.value');
-        if (!nameEl || !valueEl) continue;
-        if (Shared.normalizeText(nameEl.textContent) === 'id.') {
-          return Shared.normalizeSpaces(valueEl.textContent);
+
+        if (Shared.normalizeText(nameEl?.textContent || '') === 'id.') {
+          return Shared.normalizeSpaces(valueEl?.textContent || '');
         }
       }
 
@@ -787,35 +775,32 @@
     },
 
     extractDataEnvio() {
-      const labelNodes = Array.from(document.querySelectorAll('#expedientesEnviadosViewView .propertyView'));
-      for (const node of labelNodes) {
+      const nodes = [...document.querySelectorAll('#expedientesEnviadosViewView .propertyView')];
+
+      for (const node of nodes) {
         const nameEl = node.querySelector('.name');
         const valueEl = node.querySelector('.value');
-        if (!nameEl || !valueEl) continue;
-        if (Shared.normalizeText(nameEl.textContent) === 'data de envio') {
-          return Shared.normalizeSpaces(valueEl.textContent);
+
+        if (Shared.normalizeText(nameEl?.textContent || '') === 'data de envio') {
+          return Shared.normalizeSpaces(valueEl?.textContent || '');
         }
       }
+
       return '';
     },
 
     classifyScenario(pageData) {
       const situacao = Shared.normalizeText(pageData.rowData?.situacao || '');
-      const messageText = Shared.normalizeSpaces(pageData.mensagemResposta);
 
       if (pageData.codigoValido) {
         return { code: 'CODIGO_VALIDO', label: 'Código válido localizado' };
       }
 
-      if (situacao.includes('aguardando_retorno') || situacao.includes('aguardando retorno')) {
+      if (situacao.includes('aguardando retorno')) {
         return { code: 'AR_NAO_JUNTADO', label: 'Retorno ainda não consolidado' };
       }
 
-      if (messageText && !Shared.isNaoDisponivelText(messageText)) {
-        return { code: 'AR_NAO_JUNTADO', label: 'Situação sem código localizador válido' };
-      }
-
-      return { code: 'AR_NAO_JUNTADO', label: 'Retorno insuficiente / AR não juntado' };
+      return { code: 'AR_NAO_JUNTADO', label: 'Situação sem código localizador válido' };
     },
 
     resolveInitialCorreiosType(pageData, classification) {
@@ -826,19 +811,26 @@
 
     inferCorreiosCertType(payload) {
       const status = Shared.normalizeText(payload?.status || '');
+      const erro = Shared.normalizeText(payload?.erroConsulta || '');
+
+      if (erro || status.includes('periodo invalido') || status.includes('consulta nao concluida')) {
+        return 'CORREIOS_NAO_CONSULTADO';
+      }
 
       if (status.includes('entregue ao destinatario')) return 'CORREIOS_ENTREGUE';
       if (status.includes('nao entregue')) return 'CORREIOS_TENTATIVA_FRUSTRADA';
       if (status.includes('aguardando retirada')) return 'CORREIOS_AGUARDANDO_RETIRADA';
       if (status.includes('devolvido')) return 'CORREIOS_DEVOLVIDO';
       if (status) return 'CORREIOS_PENDENTE';
+
       return 'CORREIOS_NAO_CONSULTADO';
     },
 
     formatTrackingSummary(payload) {
       if (!payload) return '';
-      const parts = [payload.codigo, payload.status, payload.local, payload.dataHora].filter(Boolean);
-      return parts.join(' | ');
+      return [payload.codigo, payload.status, payload.local, payload.dataHora, payload.erroConsulta]
+        .filter(Boolean)
+        .join(' | ');
     },
 
     renderModal(pageData, classification) {
@@ -853,14 +845,14 @@
       const trackingAvailable = Boolean(pageData.trackingSalvo);
       const initialCertType = PJeCertidoes.resolveInitialCorreiosType(pageData, classification);
       const initialDataEntrega = pageData.trackingSalvo?.dataEntregaISO || '';
-      const initialStatusDescricao = pageData.trackingSalvo?.status || '';
+      const initialStatusDescricao = pageData.trackingSalvo?.status || pageData.trackingSalvo?.erroConsulta || '';
       const hasImmediateCertidao = !pageData.codigoValido;
 
       const defaultText = hasImmediateCertidao
         ? Templates.buildCertidao({
             pageData,
             certidaoType: classification.code,
-            idAutos: pageData.idAutosCorrespondente || pageData.rowData?.idProcessoDocumento || '',
+            idAutos: pageData.idAutosCorrespondente,
             dataEntrega: '',
             statusDescricao: '',
             codigoObjetoPostal: pageData.codigoObjetoPostalModal,
@@ -909,7 +901,7 @@
 
             <div class="ecarta-field full">
               <label>ID Processo Documento</label>
-              <input type="text" id="ecarta-id-autos" value="${Shared.escapeAttr(pageData.idAutosCorrespondente || pageData.rowData?.idProcessoDocumento || '')}">
+              <input type="text" id="ecarta-id-autos" value="${Shared.escapeAttr(pageData.idAutosCorrespondente || '')}">
               <div class="ecarta-hint">Campo obrigatório para copiar a certidão.</div>
             </div>
 
@@ -923,7 +915,9 @@
               <label>Situação confirmada nos Correios</label>
               <select id="ecarta-correios-status">
                 ${PJeCertidoes.statusOptions.map(opt => `
-                  <option value="${Shared.escapeAttr(opt.value)}" ${opt.value === initialCertType ? 'selected' : ''}>${Shared.escapeHtml(opt.label)}</option>
+                  <option value="${Shared.escapeAttr(opt.value)}" ${opt.value === initialCertType ? 'selected' : ''}>
+                    ${Shared.escapeHtml(opt.label)}
+                  </option>
                 `).join('')}
               </select>
             </div>
@@ -946,11 +940,12 @@
             <div class="ecarta-field full">
               <label>Texto da certidão</label>
               <textarea id="ecarta-texto-certidao" class="ecarta-certidao-readonly ${hasImmediateCertidao ? '' : 'ecarta-row-hidden'}" readonly spellcheck="false"></textarea>
+
               <div id="ecarta-placeholder" class="ecarta-placeholder ${hasImmediateCertidao ? 'ecarta-row-hidden' : ''}">
                 Realize a consulta aos Correios para gerar a certidão desta linha.
               </div>
 
-              <div class="ecarta-checkbox-wrap ${pageData.codigoValido ? '' : 'ecarta-row-hidden'}" id="ecarta-sem-ar-fisico-row">
+              <div class="ecarta-checkbox-wrap ${pageData.codigoValido ? '' : 'ecarta-row-hidden'}">
                 <input type="checkbox" id="ecarta-sem-ar-fisico">
                 <label for="ecarta-sem-ar-fisico">Sem juntada de AR físico</label>
               </div>
@@ -993,24 +988,23 @@
       const textoTextarea = overlay.querySelector('#ecarta-texto-certidao');
       const placeholder = overlay.querySelector('#ecarta-placeholder');
       const retornoCorreiosInput = overlay.querySelector('#ecarta-retorno-correios');
-      const fecharBtn = overlay.querySelector('#ecarta-fechar-btn');
-      const copiarBtn = overlay.querySelector('#ecarta-copiar-btn');
-      const consultarCorreiosBtn = overlay.querySelector('#ecarta-consultar-correios-btn');
-      const aplicarSalvoBtn = overlay.querySelector('#ecarta-aplicar-salvo-btn');
 
       let certidaoReady = hasImmediateCertidao;
-
       textoTextarea.value = defaultText;
 
-      textoTextarea.addEventListener('mousedown', (event) => event.preventDefault());
-      textoTextarea.addEventListener('selectstart', (event) => event.preventDefault());
+      textoTextarea.addEventListener('mousedown', event => event.preventDefault());
+      textoTextarea.addEventListener('selectstart', event => event.preventDefault());
 
       const hasTrackingVisible = () =>
         correiosStatusRow && !correiosStatusRow.classList.contains('ecarta-row-hidden');
 
+      const toggleRow = (row, show) => {
+        if (row) row.classList.toggle('ecarta-row-hidden', !show);
+      };
+
       const showTrackingFields = () => {
-        PJeCertidoes.toggleRow(correiosStatusRow, true);
-        PJeCertidoes.toggleRow(dataEntregaRow, true);
+        toggleRow(correiosStatusRow, true);
+        toggleRow(dataEntregaRow, true);
         refreshConditionalFields();
       };
 
@@ -1023,15 +1017,11 @@
         if (!hasTrackingVisible() || !correiosStatusSelect) return;
 
         const selected = correiosStatusSelect.value;
-        PJeCertidoes.toggleRow(dataEntregaRow, true);
-        PJeCertidoes.toggleRow(statusDescricaoRow, selected !== 'CORREIOS_ENTREGUE' && selected !== 'CORREIOS_NAO_CONSULTADO');
+        toggleRow(dataEntregaRow, selected === 'CORREIOS_ENTREGUE');
+        toggleRow(statusDescricaoRow, selected !== 'CORREIOS_ENTREGUE');
 
         if (selected === 'CORREIOS_ENTREGUE' && !statusDescricaoInput.value) {
           statusDescricaoInput.value = 'Objeto entregue ao destinatário';
-        }
-
-        if (selected === 'CORREIOS_NAO_CONSULTADO') {
-          statusDescricaoInput.value = '';
         }
       };
 
@@ -1040,7 +1030,7 @@
           ? (correiosStatusSelect?.value || 'CORREIOS_ENTREGUE')
           : classification.code;
 
-        const text = Templates.buildCertidao({
+        textoTextarea.value = Templates.buildCertidao({
           pageData,
           certidaoType,
           idAutos: idAutosInput.value,
@@ -1049,19 +1039,19 @@
           codigoObjetoPostal: Shared.normalizeSpaces(idObjetoPostalModalInput.value),
           incluirSemJuntadaArFisico: Boolean(pageData.codigoValido && semArFisicoCheckbox?.checked)
         });
-
-        textoTextarea.value = text;
       };
 
-      const applyTrackingData = (payload) => {
+      const applyTrackingData = payload => {
         const codigoAtual = Shared.normalizeSpaces(idObjetoPostalModalInput.value).toUpperCase();
         const codigoPayload = Shared.normalizeSpaces(payload?.codigo || '').toUpperCase();
 
-        if (!codigoPayload && codigoAtual) {
+        if (!payload.codigo && codigoAtual) {
           payload.codigo = codigoAtual;
         }
 
-        if (codigoPayload && codigoAtual && codigoPayload !== codigoAtual) return;
+        if (codigoPayload && codigoAtual && codigoPayload !== codigoAtual) {
+          return;
+        }
 
         if (payload.codigo) {
           idObjetoPostalModalInput.value = payload.codigo;
@@ -1070,17 +1060,9 @@
         showTrackingFields();
         showTextArea();
 
-        if (correiosStatusSelect) {
-          correiosStatusSelect.value = PJeCertidoes.inferCorreiosCertType(payload);
-        }
-
-        if (dataEntregaInput) {
-          dataEntregaInput.value = payload.dataEntregaISO || '';
-        }
-
-        if (statusDescricaoInput) {
-          statusDescricaoInput.value = payload.status || '';
-        }
+        correiosStatusSelect.value = PJeCertidoes.inferCorreiosCertType(payload);
+        dataEntregaInput.value = payload.dataEntregaISO || '';
+        statusDescricaoInput.value = payload.status || payload.erroConsulta || '';
 
         retornoCorreiosInput.value = PJeCertidoes.formatTrackingSummary(payload);
 
@@ -1088,17 +1070,19 @@
         refreshConditionalFields();
         refreshText();
 
-        Shared.showToast(`Modal atualizado com retorno dos Correios: ${payload.status || 'sem status'}`);
+        Shared.showToast(`Modal atualizado com retorno dos Correios: ${payload.status || payload.erroConsulta || 'sem status'}`);
       };
 
       const applySavedTrackingForCurrentCode = () => {
         const codigo = Shared.normalizeSpaces(idObjetoPostalModalInput.value).toUpperCase();
+
         if (!Shared.isValidPostalCode(codigo)) {
           Shared.showToast('Informe um código válido para aplicar retorno salvo.');
           return;
         }
 
         const saved = Shared.getTrackingPayload(codigo);
+
         if (!saved) {
           Shared.showToast('Não há retorno salvo dos Correios para esse código.');
           return;
@@ -1107,36 +1091,11 @@
         applyTrackingData(saved);
       };
 
-      idAutosInput.addEventListener('input', () => {
-        if (certidaoReady) refreshText();
-      });
+      overlay.querySelector('#ecarta-fechar-btn').addEventListener('click', PJeCertidoes.destroyModal);
 
-      idObjetoPostalModalInput.addEventListener('input', () => {
-        const saved = Shared.getTrackingPayload(Shared.normalizeSpaces(idObjetoPostalModalInput.value).toUpperCase());
-        retornoCorreiosInput.value = PJeCertidoes.formatTrackingSummary(saved);
-        if (certidaoReady) refreshText();
-      });
-
-      if (semArFisicoCheckbox) {
-        semArFisicoCheckbox.addEventListener('change', () => {
-          if (certidaoReady) refreshText();
-        });
-      }
-
-      if (correiosStatusSelect) {
-        correiosStatusSelect.addEventListener('change', () => {
-          refreshConditionalFields();
-          if (certidaoReady) refreshText();
-        });
-      }
-
-      if (dataEntregaInput) dataEntregaInput.addEventListener('input', () => { if (certidaoReady) refreshText(); });
-      if (statusDescricaoInput) statusDescricaoInput.addEventListener('input', () => { if (certidaoReady) refreshText(); });
-
-      fecharBtn.addEventListener('click', PJeCertidoes.destroyModal);
-
-      consultarCorreiosBtn.addEventListener('click', () => {
+      overlay.querySelector('#ecarta-consultar-correios-btn').addEventListener('click', () => {
         const codigo = Shared.normalizeSpaces(idObjetoPostalModalInput.value).toUpperCase();
+
         if (!Shared.isValidPostalCode(codigo)) {
           Shared.showToast('Preencha um código localizador válido antes de consultar os Correios.');
           idObjetoPostalModalInput.focus();
@@ -1148,16 +1107,11 @@
         Shared.showToast('Página dos Correios aberta. Após o captcha, o retorno pode voltar automaticamente para este modal.');
       });
 
-      aplicarSalvoBtn.addEventListener('click', applySavedTrackingForCurrentCode);
+      overlay.querySelector('#ecarta-aplicar-salvo-btn').addEventListener('click', applySavedTrackingForCurrentCode);
 
-      overlay.addEventListener('click', (event) => {
-        if (event.target === overlay) PJeCertidoes.destroyModal();
-      });
-
-      document.addEventListener('keydown', PJeCertidoes.onEscClose, { once: true });
-
-      copiarBtn.onclick = async function () {
+      overlay.querySelector('#ecarta-copiar-btn').addEventListener('click', async () => {
         const idAutos = Shared.normalizeSpaces(idAutosInput.value);
+
         if (!idAutos) {
           Shared.showToast('Preencha o ID Processo Documento correspondente.');
           idAutosInput.focus();
@@ -1178,69 +1132,45 @@
           Shared.showToast(`Certidão copiada com sucesso. Método: ${result.method}`);
         } catch (error) {
           console.error('[E-Carta Certidões] Erro ao copiar:', error);
-          try {
-            window.prompt('Copie manualmente a certidão abaixo:', textoParaCopiar);
-          } catch (_) {}
-          Shared.showToast('Falha na cópia automática. O texto foi aberto para cópia manual.');
+          window.prompt('Copie manualmente a certidão abaixo:', textoParaCopiar);
         }
-      };
+      });
+
+      [idAutosInput, idObjetoPostalModalInput, dataEntregaInput, statusDescricaoInput].forEach(input => {
+        input?.addEventListener('input', () => {
+          if (certidaoReady) refreshText();
+        });
+      });
+
+      semArFisicoCheckbox?.addEventListener('change', () => {
+        if (certidaoReady) refreshText();
+      });
+
+      correiosStatusSelect?.addEventListener('change', () => {
+        refreshConditionalFields();
+        if (certidaoReady) refreshText();
+      });
+
+      overlay.addEventListener('click', event => {
+        if (event.target === overlay) PJeCertidoes.destroyModal();
+      });
 
       refreshConditionalFields();
       if (hasImmediateCertidao) showTextArea();
 
-      return { applyTrackingData, destroy: PJeCertidoes.destroyModal };
-    },
-
-    toggleRow(row, show) {
-      if (!row) return;
-      row.classList.toggle('ecarta-row-hidden', !show);
-    },
-
-    onEscClose(event) {
-      if (event.key === 'Escape') PJeCertidoes.destroyModal();
+      return { applyTrackingData };
     },
 
     destroyModal() {
-      const overlay = document.getElementById(`${PJeCertidoes.config.modalId}-overlay`);
-      if (overlay) overlay.remove();
+      document.getElementById(`${PJeCertidoes.config.modalId}-overlay`)?.remove();
       PJeCertidoes.currentModalApi = null;
     }
   };
 
   const PJeExpedientesMonitorLink = {
     init() {
-      PJeExpedientesMonitorLink.injectStyles();
       PJeExpedientesMonitorLink.observe();
       PJeExpedientesMonitorLink.enhance();
-    },
-
-    injectStyles() {
-      if (document.getElementById('pje-monitor-link-style')) return;
-
-      const style = document.createElement('style');
-      style.id = 'pje-monitor-link-style';
-      style.textContent = `
-        .pje-monitor-correios-link {
-          cursor: pointer;
-          margin-left: 6px;
-          user-select: none;
-          display: inline-flex;
-          align-items: center;
-          vertical-align: middle;
-          color: inherit;
-          opacity: .85;
-        }
-
-        .pje-monitor-correios-link:hover {
-          opacity: 1;
-        }
-
-        .pje-monitor-correios-inline {
-          display: inline-flex;
-          align-items: center;
-        }
-      `;
-      document.head.appendChild(style);
     },
 
     observe() {
@@ -1263,53 +1193,48 @@
 
       const rows = [...table.querySelectorAll('tbody tr.rich-table-row, tbody tr')];
 
-      rows.forEach((row) => {
+      rows.forEach(row => {
         if (row.dataset.monitorCorreiosEnhanced === 'true') return;
 
         const firstCell = row.querySelector('td');
         if (!firstCell) return;
 
-        const rowText = Shared.normalizeSpaces(firstCell.textContent || '');
-        if (!/correios\s*\(/i.test(rowText)) return;
+        if (!/correios\s*\(/i.test(firstCell.textContent || '')) return;
 
-        const iconWrapper = document.createElement('span');
-        iconWrapper.className = 'pje-monitor-correios-link';
-        iconWrapper.title = 'Abrir Monitor E-Carta';
-        iconWrapper.setAttribute('aria-label', 'Abrir Monitor E-Carta');
-        iconWrapper.tabIndex = 0;
-        iconWrapper.innerHTML = `<i class="fa fa-external-link" aria-hidden="true"></i>`;
+        const icon = document.createElement('span');
+        icon.className = 'pje-monitor-correios-link';
+        icon.title = 'Abrir Monitor E-Carta';
+        icon.setAttribute('aria-label', 'Abrir Monitor E-Carta');
+        icon.tabIndex = 0;
+        icon.innerHTML = `<i class="fa fa-external-link" aria-hidden="true"></i>`;
 
-        const openMonitor = (event) => {
+        const openMonitor = event => {
           event.preventDefault();
           event.stopPropagation();
-          try {
-            sessionStorage.setItem(APP.storage.pendingMonitorProcess, processNumber);
-            sessionStorage.removeItem(APP.storage.monitorAutofillDone);
-          } catch (error) {
-            console.warn('[Monitor E-Carta] Falha ao salvar processo pendente:', error);
-          }
+
+          sessionStorage.setItem(APP.storage.pendingMonitorProcess, processNumber);
+          sessionStorage.removeItem(APP.storage.monitorAutofillDone);
+
           window.open(`${APP.pjeOrigin}${APP.paths.monitorEcarta}`, '_blank');
         };
 
-        iconWrapper.addEventListener('click', openMonitor);
-        iconWrapper.addEventListener('keydown', (event) => {
+        icon.addEventListener('click', openMonitor);
+        icon.addEventListener('keydown', event => {
           if (event.key === 'Enter' || event.key === ' ') openMonitor(event);
         });
 
-        const inserted = PJeExpedientesMonitorLink.attachToCorreiosLine(firstCell, iconWrapper);
-
+        const inserted = PJeExpedientesMonitorLink.attachToCorreiosLine(firstCell, icon);
         if (inserted) row.dataset.monitorCorreiosEnhanced = 'true';
       });
     },
 
-    attachToCorreiosLine(container, iconWrapper) {
+    attachToCorreiosLine(container, icon) {
       const walker = document.createTreeWalker(
         container,
         NodeFilter.SHOW_TEXT,
         {
           acceptNode(node) {
-            const text = Shared.normalizeSpaces(node.nodeValue || '');
-            return /Correios\s*\(/i.test(text)
+            return /Correios\s*\(/i.test(node.nodeValue || '')
               ? NodeFilter.FILTER_ACCEPT
               : NodeFilter.FILTER_SKIP;
           }
@@ -1321,8 +1246,6 @@
 
       const parent = textNode.parentNode;
       if (!parent) return false;
-
-      if (parent.querySelector && parent.querySelector('.pje-monitor-correios-link')) return true;
 
       const originalText = textNode.nodeValue || '';
       const match = originalText.match(/(Correios\s*\([^)]+\))/i);
@@ -1336,12 +1259,12 @@
 
       if (before) fragment.appendChild(document.createTextNode(before));
 
-      const lineSpan = document.createElement('span');
-      lineSpan.className = 'pje-monitor-correios-inline';
-      lineSpan.appendChild(document.createTextNode(lineText));
-      lineSpan.appendChild(iconWrapper);
+      const span = document.createElement('span');
+      span.className = 'pje-monitor-correios-inline';
+      span.appendChild(document.createTextNode(lineText));
+      span.appendChild(icon);
 
-      fragment.appendChild(lineSpan);
+      fragment.appendChild(span);
 
       if (after) fragment.appendChild(document.createTextNode(after));
 
@@ -1371,8 +1294,9 @@
       const processNumber = sessionStorage.getItem(APP.storage.pendingMonitorProcess) || '';
       if (!processNumber) return false;
 
-      const alreadyDone = sessionStorage.getItem(APP.storage.monitorAutofillDone) === processNumber;
-      if (alreadyDone) return true;
+      if (sessionStorage.getItem(APP.storage.monitorAutofillDone) === processNumber) {
+        return true;
+      }
 
       const input = document.querySelector('#ecartaSearchForm\\:numProcessoDecoration\\:numProcesso');
       const button = document.querySelector('#ecartaSearchForm\\:searchButton');
@@ -1398,9 +1322,11 @@
     observer: null,
     lastSentSignature: '',
     sentOnce: false,
+    nativeAlert: null,
 
     init() {
       CorreiosTracking.injectStyles();
+      CorreiosTracking.interceptAlert();
       CorreiosTracking.observeResults();
       CorreiosTracking.trySendTrackingData();
     },
@@ -1428,9 +1354,33 @@
       document.head.appendChild(style);
     },
 
+    interceptAlert() {
+      if (window.__ecartaCorreiosAlertIntercepted) return;
+      window.__ecartaCorreiosAlertIntercepted = true;
+
+      CorreiosTracking.nativeAlert = window.alert;
+
+      window.alert = function (message) {
+        const text = Shared.normalizeSpaces(message);
+
+        if (/per[ií]odo inv[aá]lido/i.test(text)) {
+          CorreiosTracking.sendErrorPayload(text);
+        }
+
+        return CorreiosTracking.nativeAlert.call(window, message);
+      };
+    },
+
     observeResults() {
       CorreiosTracking.observer = new MutationObserver(() => {
         if (CorreiosTracking.sentOnce) return;
+
+        const domError = CorreiosTracking.detectDomError();
+        if (domError) {
+          CorreiosTracking.sendErrorPayload(domError);
+          return;
+        }
+
         CorreiosTracking.trySendTrackingData();
       });
 
@@ -1440,37 +1390,39 @@
       });
     },
 
-    stopObserver() {
-      if (CorreiosTracking.observer) {
-        CorreiosTracking.observer.disconnect();
-        CorreiosTracking.observer = null;
-      }
+    detectDomError() {
+      const text = Shared.normalizeSpaces(document.body?.innerText || '');
+      if (/per[ií]odo inv[aá]lido/i.test(text)) return 'Período inválido';
+      return '';
     },
 
-    updateStatusFlag(text) {
-      let flag = document.getElementById('ecarta-correios-helper-flag');
-      if (!flag) {
-        flag = document.createElement('div');
-        flag.id = 'ecarta-correios-helper-flag';
-        document.body.appendChild(flag);
-      }
-      flag.textContent = text;
-    },
+    sendErrorPayload(message) {
+      if (CorreiosTracking.sentOnce) return;
 
-    buildPayloadSignature(payload) {
-      return [
-        Shared.normalizeSpaces(payload?.codigo || ''),
-        Shared.normalizeSpaces(payload?.status || ''),
-        Shared.normalizeSpaces(payload?.local || ''),
-        Shared.normalizeSpaces(payload?.dataHora || '')
-      ].join('|');
+      const codigo = CorreiosTracking.getTrackingCode();
+      const payload = {
+        codigo,
+        status: `Consulta não concluída - ${message}`,
+        local: '',
+        dataHora: '',
+        dataEntregaISO: '',
+        erroConsulta: message,
+        rawSteps: []
+      };
+
+      CorreiosTracking.sendPayload(payload);
     },
 
     trySendTrackingData() {
       const payload = CorreiosTracking.parseTracking();
       if (!payload) return;
 
+      CorreiosTracking.sendPayload(payload);
+    },
+
+    sendPayload(payload) {
       const signature = CorreiosTracking.buildPayloadSignature(payload);
+
       if (signature && signature === CorreiosTracking.lastSentSignature) return;
 
       CorreiosTracking.updateStatusFlag(`Retorno lido: ${payload.status}`);
@@ -1488,15 +1440,43 @@
       }
     },
 
-    parseTracking() {
-      const trackingRoot = CorreiosTracking.getVisibleTrackingRoot();
-      if (!trackingRoot) return null;
+    stopObserver() {
+      if (CorreiosTracking.observer) {
+        CorreiosTracking.observer.disconnect();
+        CorreiosTracking.observer = null;
+      }
+    },
 
-      const step = trackingRoot.querySelector('.ship-steps .step');
+    updateStatusFlag(text) {
+      let flag = document.getElementById('ecarta-correios-helper-flag');
+
+      if (!flag) {
+        flag = document.createElement('div');
+        flag.id = 'ecarta-correios-helper-flag';
+        document.body.appendChild(flag);
+      }
+
+      flag.textContent = text;
+    },
+
+    buildPayloadSignature(payload) {
+      return [
+        Shared.normalizeSpaces(payload?.codigo || ''),
+        Shared.normalizeSpaces(payload?.status || ''),
+        Shared.normalizeSpaces(payload?.local || ''),
+        Shared.normalizeSpaces(payload?.dataHora || ''),
+        Shared.normalizeSpaces(payload?.erroConsulta || '')
+      ].join('|');
+    },
+
+    parseTracking() {
+      const root = CorreiosTracking.getVisibleTrackingRoot();
+      if (!root) return null;
+
+      const step = root.querySelector('.ship-steps .step');
       if (!step) return null;
 
       const codigo = CorreiosTracking.getTrackingCode();
-
       const headEls = step.querySelectorAll('.text-head');
       const contentEls = step.querySelectorAll('.text-content');
 
@@ -1512,7 +1492,7 @@
         local,
         dataHora,
         dataEntregaISO: Shared.extractIsoDate(dataHora),
-        rawSteps: CorreiosTracking.extractAllSteps(trackingRoot)
+        rawSteps: CorreiosTracking.extractAllSteps(root)
       };
     },
 
@@ -1542,11 +1522,13 @@
       const breadcrumbCode = Shared.normalizeSpaces(document.querySelector('#trilha a:last-child')?.textContent || '')
         .replace(/\s+/g, '')
         .toUpperCase();
+
       if (Shared.isValidPostalCode(breadcrumbCode)) return breadcrumbCode;
 
       const titleCode = Shared.normalizeSpaces(document.querySelector('#titulo-pagina h3')?.textContent || '')
         .replace(/\s+/g, '')
         .toUpperCase();
+
       if (Shared.isValidPostalCode(titleCode)) return titleCode;
 
       const queryCode = new URLSearchParams(location.search).get('objetos');
@@ -1558,10 +1540,11 @@
       return '';
     },
 
-    extractAllSteps(trackingRoot) {
-      return [...trackingRoot.querySelectorAll('.ship-steps .step')].map(step => {
+    extractAllSteps(root) {
+      return [...root.querySelectorAll('.ship-steps .step')].map(step => {
         const heads = [...step.querySelectorAll('.text-head')].map(el => Shared.normalizeSpaces(el.textContent));
         const contents = [...step.querySelectorAll('.text-content')].map(el => Shared.normalizeSpaces(el.textContent));
+
         return {
           titulo: heads[0] || '',
           observacao: heads[1] || '',
